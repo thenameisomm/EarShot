@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EarShot</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_device">Device</string>
+    <string name="nav_gesture">Gesture</string>
+    <string name="nav_camera">Camera</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Welcome to EarShot</string>
+    <string name="home_description">Control your camera with Bluetooth earbud button presses</string>
+    <string name="home_status_label">Bluetooth Status</string>
+    <string name="home_status_disconnected">Not Connected</string>
+    <string name="home_status_connected">Connected</string>
+    <string name="home_quick_actions">Quick Actions</string>
+    <string name="home_connect_device">Connect Device</string>
+    <string name="home_map_gestures">Map Gestures</string>
+    <string name="home_camera_settings">Camera Settings</string>
+
+    <!-- Device Screen -->
+    <string name="device_title">Connected Devices</string>
+    <string name="device_subtitle">Manage your Bluetooth earbuds</string>
+    <string name="device_scan">Scan for Devices</string>
+    <string name="device_scanning">Scanning…</string>
+    <string name="device_empty">No devices found</string>
+    <string name="device_connected">Connected</string>
+    <string name="device_disconnected">Disconnected</string>
+    <string name="device_pair">Pair</string>
+    <string name="device_unpair">Unpair</string>
+
+    <!-- Gesture Mapping Screen -->
+    <string name="gesture_title">Gesture Mapping</string>
+    <string name="gesture_subtitle">Map earbud gestures to camera actions</string>
+    <string name="gesture_save">Save Mappings</string>
+    <string name="gesture_reset">Reset to Default</string>
+    <string name="gesture_single_tap">Single Tap</string>
+    <string name="gesture_double_tap">Double Tap</string>
+    <string name="gesture_triple_tap">Triple Tap</string>
+    <string name="gesture_long_press">Long Press</string>
+
+    <!-- Camera Actions -->
+    <string name="action_take_photo">Take Photo</string>
+    <string name="action_start_video">Start Video</string>
+    <string name="action_stop_video">Stop Video</string>
+    <string name="action_switch_camera">Switch Camera</string>
+    <string name="action_toggle_flash">Toggle Flash</string>
+    <string name="action_none">None</string>
+
+    <!-- Camera Settings Screen -->
+    <string name="camera_settings_title">Camera Settings</string>
+    <string name="camera_settings_subtitle">Configure camera preferences</string>
+    <string name="camera_select">Select Camera</string>
+    <string name="camera_front">Front Camera</string>
+    <string name="camera_rear">Rear Camera</string>
+    <string name="camera_mode">Camera Mode</string>
+    <string name="camera_photo">Photo</string>
+    <string name="camera_video">Video</string>
+    <string name="camera_grid">Grid Overlay</string>
+    <string name="camera_grid_desc">Show rule of thirds grid</string>
+    <string name="camera_timer">Timer</string>
+    <string name="camera_timer_off">Off</string>
+    <string name="camera_timer_3s">3 seconds</string>
+    <string name="camera_timer_10s">10 seconds</string>
+    <string name="camera_save">Save Settings</string>
+    <string name="camera_saved">Settings saved</string>
+
+    <!-- Media Button Screen -->
+    <string name="nav_media">Media</string>
+    <string name="media_title">Media Button Detection</string>
+    <string name="media_subtitle">Detect Bluetooth earbud button presses</string>
+    <string name="media_service_status">Service Status</string>
+    <string name="media_service_running">Running - Listening for button presses</string>
+    <string name="media_service_stopped">Not running</string>
+    <string name="media_start">Start</string>
+    <string name="media_stop">Stop</string>
+    <string name="media_event_history">Event History</string>
+    <string name="media_clear">Clear</string>
+    <string name="media_empty">No events detected yet.\nStart the service and press buttons on your Bluetooth earbuds.</string>
+    <string name="media_event">Media button event</string>
+
+    <!-- General -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="reset">Reset</string>
+    <string name="error">Error</string>
+    <string name="success">Success</string>
+</resources>

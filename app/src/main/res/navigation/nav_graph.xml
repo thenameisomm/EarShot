@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.earshot.ui.home.HomeFragment"
+        android:label="@string/nav_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/deviceFragment"
+        android:name="com.earshot.ui.device.DeviceFragment"
+        android:label="@string/nav_device"
+        tools:layout="@layout/fragment_device" />
+
+    <fragment
+        android:id="@+id/gestureFragment"
+        android:name="com.earshot.ui.gesture.GestureFragment"
+        android:label="@string/nav_gesture"
+        tools:layout="@layout/fragment_gesture" />
+
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="com.earshot.ui.camera.CameraFragment"
+        android:label="@string/nav_camera"
+        tools:layout="@layout/fragment_camera" />
+
+    <fragment
+        android:id="@+id/mediaButtonFragment"
+        android:name="com.earshot.ui.media.MediaButtonFragment"
+        android:label="@string/nav_media"
+        tools:layout="@layout/fragment_media_button" />
+
+</navigation>

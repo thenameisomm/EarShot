@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ============================================
+         EarShot Premium Design System
+         Inspired by Apple/iOS design language
+         ============================================ -->
+
+    <!-- Primary Colors - Sophisticated Blue -->
+    <color name="md_theme_primary">#007AFF</color>
+    <color name="md_theme_onPrimary">#FFFFFF</color>
+    <color name="md_theme_primaryContainer">#E5F1FF</color>
+    <color name="md_theme_onPrimaryContainer">#004AAD</color>
+
+    <!-- Secondary Colors - Elegant Purple -->
+    <color name="md_theme_secondary">#5856D6</color>
+    <color name="md_theme_onSecondary">#FFFFFF</color>
+    <color name="md_theme_secondaryContainer">#E8E5FF</color>
+    <color name="md_theme_onSecondaryContainer">#1F1A6B</color>
+
+    <!-- Tertiary Colors - Premium Teal -->
+    <color name="md_theme_tertiary">#34C759</color>
+    <color name="md_theme_onTertiary">#FFFFFF</color>
+    <color name="md_theme_tertiaryContainer">#D4FFDD</color>
+    <color name="md_theme_onTertiaryContainer">#006E33</color>
+
+    <!-- Error Colors - Refined Red -->
+    <color name="md_theme_error">#FF3B30</color>
+    <color name="md_theme_onError">#FFFFFF</color>
+    <color name="md_theme_errorContainer">#FFE4E3</color>
+    <color name="md_theme_onErrorContainer">#8C0000</color>
+
+    <!-- Background Colors - Pure White -->
+    <color name="md_theme_background">#F2F2F7</color>
+    <color name="md_theme_onBackground">#1C1C1E</color>
+
+    <!-- Surface Colors -->
+    <color name="md_theme_surface">#FFFFFF</color>
+    <color name="md_theme_onSurface">#1C1C1E</color>
+    <color name="md_theme_surfaceVariant">#F2F2F7</color>
+    <color name="md_theme_onSurfaceVariant">#636366</color>
+
+    <!-- Outline Colors -->
+    <color name="md_theme_outline">#C7C7CC</color>
+    <color name="md_theme_outlineVariant">#E5E5EA</color>
+
+    <!-- Inverse Colors -->
+    <color name="md_theme_inverseSurface">#F2F2F7</color>
+    <color name="md_theme_inverseOnSurface">#1C1C1E</color>
+    <color name="md_theme_inversePrimary">#A8C7FF</color>
+
+    <!-- Surface Tint -->
+    <color name="md_theme_surfaceTint">#007AFF</color>
+
+    <!-- Scrim -->
+    <color name="md_theme_scrim">#000000</color>
+
+    <!-- ============================================
+         Custom Premium Colors
+         ============================================ -->
+
+    <!-- Glass Effect Colors -->
+    <color name="glass_background">#F8F8F8</color>
+    <color name="glass_surface">#FFFFFF</color>
+    <color name="glass_overlay">#80FFFFFF</color>
+
+    <!-- Gradient Colors -->
+    <color name="gradient_primary_start">#007AFF</color>
+    <color name="gradient_primary_end">#5AC8FA</color>
+
+    <!-- Card Premium Colors -->
+    <color name="card_premium_background">#FFFFFF</color>
+    <color name="card_premium_stroke">#E5E5EA</color>
+
+    <!-- Success State -->
+    <color name="success_color">#34C759</color>
+    <color name="success_container">#D4FFDD</color>
+
+    <!-- Warning State -->
+    <color name="warning_color">#FF9500</color>
+    <color name="warning_container">#FFE4C7</color>
+
+    <!-- Info State -->
+    <color name="info_color">#5AC8FA</color>
+    <color name="info_container">#D6F4FF</color>
+
+    <!-- Divider -->
+    <color name="divider">#E5E5EA</color>
+
+    <!-- Disabled State -->
+    <color name="disabled_color">#C7C7CC</color>
+    <color name="disabled_background">#F2F2F7</color>
+</resources>

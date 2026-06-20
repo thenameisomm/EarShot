@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/homeFragment"
+        android:icon="@drawable/ic_home"
+        android:title="@string/nav_home" />
+
+    <item
+        android:id="@+id/deviceFragment"
+        android:icon="@drawable/ic_bluetooth"
+        android:title="@string/nav_device" />
+
+    <item
+        android:id="@+id/mediaButtonFragment"
+        android:icon="@drawable/ic_media_button"
+        android:title="@string/nav_media" />
+
+    <item
+        android:id="@+id/cameraFragment"
+        android:icon="@drawable/ic_camera"
+        android:title="@string/nav_camera" />
+
+</menu>
