@@ -35,3 +35,11 @@ google-services.json
 *.log
 gradle.zip
 gradle-*
+.gradle/
+build/
+app/build/
+.idea/
+local.properties
+*.zip
+gradle-*
+.DS_Store
