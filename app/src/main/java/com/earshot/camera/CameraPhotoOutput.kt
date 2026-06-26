@@ -1,0 +1,214 @@
+package com.earshot.camera
+
+import android.content.ContentValues
+import android.content.Context
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import android.util.Log
+import androidx.core.content.contentValuesOf
+import androidx.core.content.ContextCompat
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+/**
+ * Helper class for photo output operations.
+ *
+ * This class provides utilities for:
+ * - Generating unique photo filenames with timestamps
+ * - Creating files in app-specific directories
+ * - Inserting photos into the MediaStore gallery
+ * - Managing photo file lifecycle
+ *
+ * ## Usage
+ *
+ * ```kotlin
+ * val photoOutput = CameraPhotoOutput(context)
+ *
+ * // Generate a unique photo file
+ * val photoFile = photoOutput.createPhotoFile()
+ *
+ * // Insert into gallery (Android 10+)
+ * val uri = photoOutput.insertToGallery(photoFile)
+ * ```
+ */
+class CameraPhotoOutput(
+    private val context: Context
+) {
+
+    // -----------------------------------------------------------------------
+    // Constants
+    // -----------------------------------------------------------------------
+
+    companion object {
+        private const val TAG = "CameraPhotoOutput"
+
+        /** File name prefix for photos */
+        private const val FILE_PREFIX = "IMG_"
+
+        /** File extension for photos */
+        private const val FILE_EXTENSION = ".jpg"
+
+        /** Directory name for photos */
+        private const val DIRECTORY_NAME = "EarShot"
+    }
+
+    // -----------------------------------------------------------------------
+    // Public API
+    // -----------------------------------------------------------------------
+
+    /**
+     * Create a new photo file with a unique timestamp-based name.
+     *
+     * The file is created in the app's external files directory (DCIM/EarShot).
+     *
+     * @return A File object representing the new photo file
+     */
+    fun createPhotoFile(): File {
+        val filename = generateUniqueFilename()
+
+        // Get the directory for our app's photos
+        val directory = getPhotoDirectory()
+
+        // Create the file
+        return File(directory, filename).apply {
+            createNewFile()
+            Log.d(TAG, "Created photo file: $absolutePath")
+        }
+    }
+
+    /**
+     * Insert a photo file into the MediaStore gallery.
+     *
+     * This makes the photo visible in the device's Gallery app.
+     * Works on all Android versions (6+).
+     *
+     * @param file The photo file to insert
+     * @return The Content URI of the inserted photo
+     */
+    fun insertToGallery(file: File): Uri {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            insertToGalleryAndroidQ(file)
+        } else {
+            insertToGalleryLegacy(file)
+        }
+    }
+
+    /**
+     * Get the photo directory for saving photos.
+     *
+     * This returns the app-specific DCIM/EarShot directory.
+     *
+     * @return The File representing the photo directory
+     */
+    fun getPhotoDirectory(): File {
+        val directory = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM),
+            DIRECTORY_NAME
+        )
+
+        if (!directory.exists()) {
+            directory.mkdirs()
+            Log.d(TAG, "Created photo directory: ${directory.absolutePath}")
+        }
+
+        return directory
+    }
+
+    /**
+     * Generate a unique photo filename with timestamp.
+     *
+     * @return A filename string in format: IMG_yyyyMMdd_HHmmss.jpg
+     */
+    fun generateUniqueFilename(): String {
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
+            .format(Date())
+        return "${FILE_PREFIX}${timestamp}${FILE_EXTENSION}"
+    }
+
+    /**
+     * Get a human-readable timestamp string for display.
+     *
+     * @return A timestamp string in format: yyyy-MM-dd HH:mm:ss
+     */
+    fun getDisplayTimestamp(): String {
+        return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            .format(Date())
+    }
+
+    // -----------------------------------------------------------------------
+    // Internal Methods
+    // -----------------------------------------------------------------------
+
+    /**
+     * Insert photo into MediaStore for Android Q (API 29) and above.
+     *
+     * Uses the MediaStore API with contentResolver for proper gallery integration.
+     */
+    private fun insertToGalleryAndroidQ(file: File): Uri {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, file.name)
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_DCIM}/EarShot")
+            put(MediaStore.Images.Media.IS_PENDING, 1)
+        }
+
+        val uri = context.contentResolver.insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            contentValues
+        ) ?: throw IllegalStateException("Failed to insert image into MediaStore")
+
+        // Copy file content to the MediaStore URI
+        file.inputStream().use { input ->
+            context.contentResolver.openOutputStream(uri)?.use { output ->
+                input.copyTo(output)
+            }
+        }
+
+        // Mark as not pending
+        contentValues.clear()
+        contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
+        context.contentResolver.update(uri, contentValues, null, null)
+
+        Log.d(TAG, "Inserted photo to gallery: $uri")
+        return uri
+    }
+
+    /**
+     * Insert photo into MediaStore for legacy Android versions (before API 29).
+     *
+     * Uses MediaScannerConnection for gallery integration.
+     */
+    private fun insertToGalleryLegacy(file: File): Uri {
+        // Scan the file to make it visible in the gallery
+        android.media.MediaScannerConnection.scanFile(
+            context,
+            arrayOf(file.absolutePath),
+            arrayOf("image/jpeg")
+        ) { _, uri ->
+            Log.d(TAG, "Legacy gallery insert completed: $uri")
+        }
+
+        return Uri.fromFile(file)
+    }
+
+    /**
+     * Delete a photo file and remove it from the gallery.
+     *
+     * @param uri The Content URI of the photo to delete
+     * @return true if deletion was successful, false otherwise
+     */
+    fun deleteFromGallery(uri: Uri): Boolean {
+        return try {
+            context.contentResolver.delete(uri, null, null)
+            Log.d(TAG, "Deleted photo from gallery: $uri")
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to delete photo from gallery", e)
+            false
+        }
+    }
+}

@@ -1,22 +1,70 @@
 package com.earshot.viewmodel
 
+import android.app.Application
+import android.net.Uri
+import android.os.Environment
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.earshot.camera.CameraPhotoOutput
+import com.earshot.camera.CameraXManager
 import com.earshot.model.CameraMode
 import com.earshot.model.CameraSelection
 import com.earshot.model.CameraSettings
 import com.earshot.model.TimerOption
 import com.earshot.repository.SettingsRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.File
 
 /**
- * ViewModel for the Camera Settings Screen.
- * Manages camera configuration options.
+ * ViewModel for the Camera functionality.
+ * Manages CameraX operations and camera settings.
+ *
+ * ## Features
+ *
+ * - Photo and video capture
+ * - Camera switching (front/rear)
+ * - Flash mode control
+ * - Camera settings management
+ *
+ * ## Usage
+ *
+ * ```kotlin
+ * val cameraViewModel = ViewModelProvider(this, CameraViewModel.Factory())
+ *     .get(CameraViewModel::class.java)
+ *
+ * // Observe capture results
+ * cameraViewModel.photoUri.observe(viewLifecycleOwner) { uri ->
+ *     // Handle photo URI
+ * }
+ * ```
  */
 class CameraViewModel(
+    application: Application,
     private val settingsRepository: SettingsRepository
-) : ViewModel() {
+) : AndroidViewModel(application) {
+
+    // -----------------------------------------------------------------------
+    // Dependencies
+    // -----------------------------------------------------------------------
+
+    private val context = application.applicationContext
+    private val photoOutput = CameraPhotoOutput(context)
+
+    // -----------------------------------------------------------------------
+    // CameraX Manager
+    // -----------------------------------------------------------------------
+
+    private val _cameraXManager = MutableLiveData<CameraXManager?>()
+    val cameraXManager: LiveData<CameraXManager?> = _cameraXManager
+
+    // -----------------------------------------------------------------------
+    // Camera State
+    // -----------------------------------------------------------------------
 
     private val _cameraSelection = MutableLiveData<CameraSelection>()
     val cameraSelection: LiveData<CameraSelection> = _cameraSelection
@@ -30,14 +78,202 @@ class CameraViewModel(
     private val _timerOption = MutableLiveData<TimerOption>()
     val timerOption: LiveData<TimerOption> = _timerOption
 
+    // -----------------------------------------------------------------------
+    // Capture State
+    // -----------------------------------------------------------------------
+
+    private val _photoUri = MutableLiveData<Uri?>()
+    val photoUri: LiveData<Uri?> = _photoUri
+
+    private val _videoUri = MutableLiveData<Uri?>()
+    val videoUri: LiveData<Uri?> = _videoUri
+
+    private val _isRecording = MutableLiveData<Boolean>(false)
+    val isRecording: LiveData<Boolean> = _isRecording
+
+    private val _flashMode = MutableLiveData<Int>(CameraXManager.FLASH_MODE_AUTO)
+    val flashMode: LiveData<Int> = _flashMode
+
     private val _saveSuccess = MutableLiveData<Boolean?>(null)
     val saveSuccess: LiveData<Boolean?> = _saveSuccess
 
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?> = _error
+
     val timerOptions: List<TimerOption> = TimerOption.entries
+
+    // -----------------------------------------------------------------------
+    // Initialization
+    // -----------------------------------------------------------------------
 
     init {
         loadSettings()
+        // Don't initialize CameraX here - let CameraFragment call initializeCameraX()
+        // with the proper PreviewView reference
     }
+
+    // -----------------------------------------------------------------------
+    // CameraX Setup
+    // -----------------------------------------------------------------------
+
+    /**
+     * Initialize CameraXManager with the provided PreviewView.
+     *
+     * @param previewView The PreviewView for camera preview
+     */
+    fun initializeCameraX(previewView: androidx.camera.view.PreviewView? = null) {
+        viewModelScope.launch {
+            _cameraXManager.value = CameraXManager(context, previewView)
+        }
+    }
+
+    /**
+     * Bind CameraX to the lifecycle.
+     *
+     * Call this in Fragment's onStart() or Activity's onStart().
+     */
+    fun bindToLifecycle(lifecycleOwner: androidx.lifecycle.LifecycleOwner) {
+        _cameraXManager.value?.bindToLifecycle(lifecycleOwner)
+    }
+
+    /**
+     * Unbind CameraX from the lifecycle.
+     *
+     * Call this in Fragment's onStop() or Activity's onStop().
+     */
+    fun unbind() {
+        _cameraXManager.value?.unbind()
+        _cameraXManager.value = null
+    }
+
+    /**
+     * Start the camera preview.
+     */
+    fun startPreview() {
+        _cameraXManager.value?.startPreview()
+    }
+
+    /**
+     * Stop the camera preview.
+     */
+    fun stopPreview() {
+        _cameraXManager.value?.stopPreview()
+    }
+
+    // -----------------------------------------------------------------------
+    // Capture Methods
+    // -----------------------------------------------------------------------
+
+    /**
+     * Take a photo.
+     *
+     * The photo will be saved to the app-specific directory and inserted
+     * into the MediaStore gallery.
+     */
+    fun takePhoto() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val cameraManager = _cameraXManager.value ?: run {
+                _error.value = "Camera not initialized"
+                return@launch
+            }
+
+            try {
+                val photoFile = photoOutput.createPhotoFile()
+                val outputFile = File(
+                    context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    "EarShot/${photoOutput.generateUniqueFilename()}"
+                )
+
+                cameraManager.takePhoto(
+                    outputFile = outputFile,
+                    onSuccess = { uri ->
+                        _photoUri.value = uri
+                        launch(Dispatchers.Main) {
+                            _error.value = null
+                        }
+                    },
+                    onError = { e ->
+                        launch(Dispatchers.Main) {
+                            _error.value = "Failed to capture photo: ${e.message}"
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                launch(Dispatchers.Main) {
+                    _error.value = "Failed to create photo file: ${e.message}"
+                }
+            }
+        }
+    }
+
+    /**
+     * Start video recording.
+     */
+    fun startVideo() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val cameraManager = _cameraXManager.value ?: run {
+                _error.value = "Camera not initialized"
+                return@launch
+            }
+
+            try {
+                val videoFile = File(
+                    context.getExternalFilesDir(Environment.DIRECTORY_MOVIES),
+                    "EarShot/${videoOutputFilename()}"
+                )
+
+                cameraManager.startVideoRecording(
+                    outputFile = videoFile,
+                    onSuccess = { uri ->
+                        _videoUri.value = uri
+                        _isRecording.value = true
+                        launch(Dispatchers.Main) {
+                            _error.value = null
+                        }
+                    },
+                    onError = { e ->
+                        launch(Dispatchers.Main) {
+                            _error.value = "Failed to start video recording: ${e.message}"
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                launch(Dispatchers.Main) {
+                    _error.value = "Failed to create video file: ${e.message}"
+                }
+            }
+        }
+    }
+
+    /**
+     * Stop video recording.
+     */
+    fun stopVideo() {
+        _cameraXManager.value?.stopVideoRecording()
+        _isRecording.value = false
+    }
+
+    /**
+     * Switch between front and rear camera.
+     *
+     * @param selection The camera selection (front or rear)
+     */
+    fun switchCamera(selection: CameraSelection) {
+        _cameraSelection.value = selection
+        _cameraXManager.value?.switchCamera(selection)
+    }
+
+    /**
+     * Toggle flash mode.
+     */
+    fun toggleFlash() {
+        _cameraXManager.value?.toggleFlash()
+        _flashMode.value = _cameraXManager.value?.getFlashMode() ?: CameraXManager.FLASH_MODE_AUTO
+    }
+
+    // -----------------------------------------------------------------------
+    // Settings Methods
+    // -----------------------------------------------------------------------
 
     /**
      * Load camera settings from storage.
@@ -62,6 +298,7 @@ class CameraViewModel(
      */
     fun setCameraMode(mode: CameraMode) {
         _cameraMode.value = mode
+        _cameraXManager.value?.setCameraMode(mode)
     }
 
     /**
@@ -93,6 +330,7 @@ class CameraViewModel(
             _saveSuccess.value = true
         } catch (e: Exception) {
             _saveSuccess.value = false
+            _error.value = "Failed to save settings: ${e.message}"
         }
     }
 
@@ -104,15 +342,37 @@ class CameraViewModel(
     }
 
     /**
+     * Clear the current error.
+     */
+    fun clearError() {
+        _error.value = null
+    }
+
+    // -----------------------------------------------------------------------
+    // Helper Methods
+    // -----------------------------------------------------------------------
+
+    private fun videoOutputFilename(): String {
+        val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.US)
+            .format(java.util.Date())
+        return "VID_${timestamp}.mp4"
+    }
+
+    // -----------------------------------------------------------------------
+    // Factory
+    // -----------------------------------------------------------------------
+
+    /**
      * Factory for creating CameraViewModel with dependencies.
      */
     class Factory(
+        private val application: Application,
         private val settingsRepository: SettingsRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(CameraViewModel::class.java)) {
-                return CameraViewModel(settingsRepository) as T
+                return CameraViewModel(application, settingsRepository) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }
