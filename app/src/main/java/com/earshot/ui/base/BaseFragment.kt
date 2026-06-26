@@ -66,3 +66,10 @@ open class BaseFragment : Fragment {
         ViewCompat.requestApplyInsets(view)
     }
 }
+
+/**
+ * Extension function to get the Application from a Fragment.
+ */
+fun Fragment.requireApplication(): android.app.Application {
+    return requireActivity().application
+}

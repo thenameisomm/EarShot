@@ -16,34 +16,45 @@
         android:orientation="vertical"
         android:paddingBottom="24dp">
 
-        <!-- Premium Header Section -->
+        <!-- Premium Header Section with Gradient -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:paddingTop="48dp"
-            android:paddingBottom="32dp"
-            android:paddingHorizontal="24dp">
+            android:paddingTop="56dp"
+            android:paddingBottom="40dp"
+            android:paddingHorizontal="24dp"
+            android:background="@drawable/bg_header_gradient">
 
             <!-- App Icon with Glow Effect -->
             <FrameLayout
-                android:layout_width="100dp"
-                android:layout_height="100dp">
+                android:layout_width="120dp"
+                android:layout_height="120dp">
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/bg_icon_glow" />
 
-                <ImageView
-                    android:id="@+id/ivLogo"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/ic_launcher_foreground"
-                    android:background="@drawable/ic_launcher_background"
-                    android:contentDescription="@string/app_name" />
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@android:color/transparent">
+
+                    <ImageView
+                        android:id="@+id/ivLogo"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_launcher_foreground"
+                        android:background="@drawable/ic_launcher_background"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@string/app_name" />
+
+                </com.google.android.material.card.MaterialCardView>
 
             </FrameLayout>
 
@@ -52,10 +63,10 @@
                 android:id="@+id/tvTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="24dp"
                 android:text="@string/app_name"
                 android:textAppearance="@style/TextAppearance.EarShot.HeadlineLarge"
-                android:textColor="?attr/colorOnBackground" />
+                android:textColor="@color/md_theme_primary" />
 
             <!-- Subtitle -->
             <TextView
@@ -65,20 +76,20 @@
                 android:layout_marginTop="8dp"
                 android:gravity="center"
                 android:text="@string/home_description"
-                android:textAppearance="@style/TextAppearance.EarShot.BodyMedium"
+                android:textAppearance="@style/TextAppearance.EarShot.BodyLarge"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:paddingHorizontal="32dp" />
 
         </LinearLayout>
 
-        <!-- Status Card - Glass Effect -->
+        <!-- Status Card - Premium Style -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardStatus"
-            style="@style/Widget.EarShot.Card.Glass"
+            style="@style/Widget.EarShot.Card.Premium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="-20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -89,14 +100,14 @@
 
                 <!-- Status Icon -->
                 <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@drawable/bg_status_icon">
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:background="@drawable/bg_status_icon_container">
 
                     <ImageView
                         android:id="@+id/ivStatusIcon"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_bluetooth"
                         app:tint="?attr/colorPrimary"
@@ -125,7 +136,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="@string/home_status_disconnected"
-                        android:textAppearance="@style/TextAppearance.EarShot.BodyMedium"
+                        android:textAppearance="@style/TextAppearance.EarShot.BodyLarge"
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
                 </LinearLayout>
@@ -133,8 +144,8 @@
                 <!-- Status Indicator -->
                 <View
                     android:id="@+id/statusIndicator"
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
                     android:background="@drawable/bg_status_indicator" />
 
             </LinearLayout>
@@ -149,7 +160,7 @@
             android:layout_marginTop="32dp"
             android:layout_marginStart="24dp"
             android:text="@string/home_quick_actions"
-            android:textAppearance="@style/TextAppearance.EarShot.TitleMedium"
+            android:textAppearance="@style/TextAppearance.EarShot.TitleLarge"
             android:textColor="?attr/colorOnBackground" />
 
         <!-- Quick Action Cards -->
@@ -163,7 +174,7 @@
             <!-- Connect Device Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnConnectDevice"
-                style="@style/Widget.EarShot.Card"
+                style="@style/Widget.EarShot.Card.Premium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="true"
@@ -177,13 +188,13 @@
                     android:padding="20dp">
 
                     <FrameLayout
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="@drawable/bg_icon_container">
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:background="@drawable/bg_icon_container_premium">
 
                         <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_bluetooth"
                             app:tint="?attr/colorPrimary"
@@ -216,8 +227,8 @@
                     </LinearLayout>
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:src="@drawable/ic_chevron_right"
                         app:tint="?attr/colorOnSurfaceVariant"
                         android:contentDescription="@null" />
@@ -229,7 +240,7 @@
             <!-- Map Gestures Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnMapGestures"
-                style="@style/Widget.EarShot.Card"
+                style="@style/Widget.EarShot.Card.Premium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -244,13 +255,13 @@
                     android:padding="20dp">
 
                     <FrameLayout
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="@drawable/bg_icon_container">
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:background="@drawable/bg_icon_container_premium">
 
                         <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_gesture"
                             app:tint="?attr/colorPrimary"
@@ -283,8 +294,8 @@
                     </LinearLayout>
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:src="@drawable/ic_chevron_right"
                         app:tint="?attr/colorOnSurfaceVariant"
                         android:contentDescription="@null" />
@@ -296,7 +307,7 @@
             <!-- Camera Settings Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnCameraSettings"
-                style="@style/Widget.EarShot.Card"
+                style="@style/Widget.EarShot.Card.Premium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -311,13 +322,13 @@
                     android:padding="20dp">
 
                     <FrameLayout
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="@drawable/bg_icon_container">
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:background="@drawable/bg_icon_container_premium">
 
                         <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_camera"
                             app:tint="?attr/colorPrimary"
@@ -350,8 +361,8 @@
                     </LinearLayout>
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:src="@drawable/ic_chevron_right"
                         app:tint="?attr/colorOnSurfaceVariant"
                         android:contentDescription="@null" />
