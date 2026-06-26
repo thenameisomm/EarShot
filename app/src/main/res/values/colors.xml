@@ -1,92 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ============================================
-         EarShot Premium Design System
-         Inspired by Apple/iOS design language
+         EarShot Premium Crayon Theme
+         Warm, playful, premium colors
          ============================================ -->
 
-    <!-- Primary Colors - Sophisticated Blue -->
-    <color name="md_theme_primary">#007AFF</color>
+    <!-- Primary Colors - Warm Purple/Pink gradient -->
+    <color name="md_theme_primary">#8B5CF6</color>
     <color name="md_theme_onPrimary">#FFFFFF</color>
-    <color name="md_theme_primaryContainer">#E5F1FF</color>
-    <color name="md_theme_onPrimaryContainer">#004AAD</color>
+    <color name="md_theme_primaryContainer">#F3E8FF</color>
+    <color name="md_theme_onPrimaryContainer">#6B21A8</color>
 
-    <!-- Secondary Colors - Elegant Purple -->
-    <color name="md_theme_secondary">#5856D6</color>
+    <!-- Secondary Colors - Warm Coral/Orange -->
+    <color name="md_theme_secondary">#F97316</color>
     <color name="md_theme_onSecondary">#FFFFFF</color>
-    <color name="md_theme_secondaryContainer">#E8E5FF</color>
-    <color name="md_theme_onSecondaryContainer">#1F1A6B</color>
+    <color name="md_theme_secondaryContainer">#FFEDD5</color>
+    <color name="md_theme_onSecondaryContainer">#7C2D12</color>
 
-    <!-- Tertiary Colors - Premium Teal -->
-    <color name="md_theme_tertiary">#34C759</color>
+    <!-- Tertiary Colors - Fresh Teal/Green -->
+    <color name="md_theme_tertiary">#14B8A6</color>
     <color name="md_theme_onTertiary">#FFFFFF</color>
-    <color name="md_theme_tertiaryContainer">#D4FFDD</color>
-    <color name="md_theme_onTertiaryContainer">#006E33</color>
+    <color name="md_theme_tertiaryContainer">#CCFBF1</color>
+    <color name="md_theme_onTertiaryContainer">#134E4A</color>
 
-    <!-- Error Colors - Refined Red -->
-    <color name="md_theme_error">#FF3B30</color>
+    <!-- Error Colors - Soft Red -->
+    <color name="md_theme_error">#EF4444</color>
     <color name="md_theme_onError">#FFFFFF</color>
-    <color name="md_theme_errorContainer">#FFE4E3</color>
-    <color name="md_theme_onErrorContainer">#8C0000</color>
+    <color name="md_theme_errorContainer">#FEE2E2</color>
+    <color name="md_theme_onErrorContainer">#991B1B</color>
 
-    <!-- Background Colors - Pure White -->
-    <color name="md_theme_background">#F2F2F7</color>
+    <!-- Background Colors - Warm Off-White -->
+    <color name="md_theme_background">#FFFBF5</color>
     <color name="md_theme_onBackground">#1C1C1E</color>
 
-    <!-- Surface Colors -->
+    <!-- Surface Colors - Cream/Off-White -->
     <color name="md_theme_surface">#FFFFFF</color>
     <color name="md_theme_onSurface">#1C1C1E</color>
-    <color name="md_theme_surfaceVariant">#F2F2F7</color>
-    <color name="md_theme_onSurfaceVariant">#636366</color>
+    <color name="md_theme_surfaceVariant">#F5F0EB</color>
+    <color name="md_theme_onSurfaceVariant">#6B6B6B</color>
 
     <!-- Outline Colors -->
-    <color name="md_theme_outline">#C7C7CC</color>
-    <color name="md_theme_outlineVariant">#E5E5EA</color>
+    <color name="md_theme_outline">#D4CFC7</color>
+    <color name="md_theme_outlineVariant">#E8E4DE</color>
 
     <!-- Inverse Colors -->
-    <color name="md_theme_inverseSurface">#F2F2F7</color>
-    <color name="md_theme_inverseOnSurface">#1C1C1E</color>
-    <color name="md_theme_inversePrimary">#A8C7FF</color>
+    <color name="md_theme_inverseSurface">#2D2D2D</color>
+    <color name="md_theme_inverseOnSurface">#F5F5F5</color>
+    <color name="md_theme_inversePrimary">#C4B5FD</color>
 
     <!-- Surface Tint -->
-    <color name="md_theme_surfaceTint">#007AFF</color>
+    <color name="md_theme_surfaceTint">#8B5CF6</color>
 
     <!-- Scrim -->
     <color name="md_theme_scrim">#000000</color>
 
     <!-- ============================================
-         Custom Premium Colors
+         Premium Custom Colors
          ============================================ -->
 
+    <!-- Gradient Colors -->
+    <color name="gradient_warm_start">#8B5CF6</color>
+    <color name="gradient_warm_mid">#EC4899</color>
+    <color name="gradient_warm_end">#F97316</color>
+
+    <color name="gradient_cool_start">#06B6D4</color>
+    <color name="gradient_cool_end">#14B8A6</color>
+
+    <color name="gradient_neutral_start">#F97316</color>
+    <color name="gradient_neutral_end">#FBBF24</color>
+
     <!-- Glass Effect Colors -->
-    <color name="glass_background">#F8F8F8</color>
+    <color name="glass_background">#FFFAF5</color>
     <color name="glass_surface">#FFFFFF</color>
     <color name="glass_overlay">#80FFFFFF</color>
 
-    <!-- Gradient Colors -->
-    <color name="gradient_primary_start">#007AFF</color>
-    <color name="gradient_primary_end">#5AC8FA</color>
-
     <!-- Card Premium Colors -->
     <color name="card_premium_background">#FFFFFF</color>
-    <color name="card_premium_stroke">#E5E5EA</color>
+    <color name="card_premium_stroke">#F5E6D3</color>
 
     <!-- Success State -->
-    <color name="success_color">#34C759</color>
-    <color name="success_container">#D4FFDD</color>
+    <color name="success_color">#10B981</color>
+    <color name="success_container">#D1FAE5</color>
 
     <!-- Warning State -->
-    <color name="warning_color">#FF9500</color>
-    <color name="warning_container">#FFE4C7</color>
+    <color name="warning_color">#F59E0B</color>
+    <color name="warning_container">#FEF3C7</color>
 
     <!-- Info State -->
-    <color name="info_color">#5AC8FA</color>
-    <color name="info_container">#D6F4FF</color>
+    <color name="info_color">#06B6D4</color>
+    <color name="info_container">#CFFAFE</color>
 
     <!-- Divider -->
-    <color name="divider">#E5E5EA</color>
+    <color name="divider">#E8E4DE</color>
 
     <!-- Disabled State -->
-    <color name="disabled_color">#C7C7CC</color>
-    <color name="disabled_background">#F2F2F7</color>
+    <color name="disabled_color">#D4CFC7</color>
+    <color name="disabled_background">#F5F0EB</color>
+
+    <!-- Material Grey Colors -->
+    <color name="material_grey_400">#BDBDBD</color>
+    <color name="material_grey_800">#424242</color>
+
+    <!-- ============================================
+         Premium Accent Colors
+         ============================================ -->
+
+    <!-- Accent Colors for highlights -->
+    <color name="accent_pink">#EC4899</color>
+    <color name="accent_orange">#F97316</color>
+    <color name="accent_yellow">#FBBF24</color>
+    <color name="accent_green">#10B981</color>
+    <color name="accent_teal">#14B8A6</color>
+    <color name="accent_blue">#3B82F6</color>
+    <color name="accent_purple">#8B5CF6</color>
+
+    <!-- Background Gradients -->
+    <color name="bg_warm_1">#FFF7ED</color>
+    <color name="bg_warm_2">#FAE8FF</color>
+    <color name="bg_warm_3">#FEF3C7</color>
+
+    <!-- Status Colors -->
+    <color name="status_connected">#10B981</color>
+    <color name="status_disconnected">#9CA3AF</color>
+    <color name="status_recording">#EF4444</color>
 </resources>
