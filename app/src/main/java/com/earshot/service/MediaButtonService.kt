@@ -7,16 +7,22 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.earshot.R
+import com.earshot.camera.CameraPhotoOutput
+import com.earshot.camera.CameraXManager
 import com.earshot.model.CameraAction
+import com.earshot.model.CameraSelection
 import com.earshot.model.MediaButtonEvent
 import com.earshot.model.MediaButtonType
 import com.earshot.repository.SettingsRepository
 import com.earshot.ui.MainActivity
+import java.io.File
 
 /**
  * Foreground Service that detects Bluetooth media button presses and routes them
@@ -28,14 +34,19 @@ import com.earshot.ui.MainActivity
  * - [processMediaButtonEvent] now feeds the engine instead of only firing a callback.
  * - [handleKeyEvent] calls [GestureEngine.onButtonDown] / [onButtonUp] for long-press
  *   support when raw [android.view.KeyEvent] data is available.
- * - [executeCameraAction] is the new dispatch point — replace its body once
- *   CameraXManager exists.
+ * - [executeCameraAction] is the new dispatch point — it calls [CameraXManager] methods
+ *   for all camera actions (photo, video, switch, flash).
  * - [GestureEngine.release] is called in [onDestroy].
+ * - [CameraXManager] is initialized lazily and bound to this service's lifecycle.
  */
 class MediaButtonService : Service() {
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var gestureEngine: GestureEngine
+
+    // CameraX Manager - initialized lazily
+    private var cameraXManager: CameraXManager? = null
+    private val photoOutput by lazy { CameraPhotoOutput(applicationContext) }
 
     // Optional callback so the UI (MediaButtonFragment) can observe raw events.
     var onMediaButtonEvent: ((MediaButtonEvent) -> Unit)? = null
@@ -72,6 +83,9 @@ class MediaButtonService : Service() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()
 
+        // Initialize CameraXManager
+        cameraXManager = CameraXManager(applicationContext)
+
         // Build the engine. It reads SharedPreferences on the main thread (tiny file,
         // safe here) and calls executeCameraAction on every resolved gesture.
         gestureEngine = GestureEngine(
@@ -79,7 +93,7 @@ class MediaButtonService : Service() {
             onActionTriggered  = { action -> executeCameraAction(action) }
         )
 
-        Log.d(TAG, "Service created — GestureEngine ready")
+        Log.d(TAG, "Service created — CameraXManager and GestureEngine ready")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -92,6 +106,8 @@ class MediaButtonService : Service() {
 
     override fun onDestroy() {
         gestureEngine.release()
+        cameraXManager?.unbind()
+        cameraXManager = null
         super.onDestroy()
         Log.d(TAG, "Service destroyed")
     }
@@ -180,41 +196,161 @@ class MediaButtonService : Service() {
     }
 
     // ---------------------------------------------------------------------------
-    // Camera dispatch — replace body once CameraXManager is built
+    // Camera dispatch — executes camera actions based on gestures
     // ---------------------------------------------------------------------------
 
     /**
      * Called by [GestureEngine] on the main thread when a gesture resolves to an action.
      *
-     * TODO: Replace the log statements with real CameraXManager calls once that class
-     *       exists, for example:
+     * This method executes the appropriate [CameraXManager] operation based on the
+     * [CameraAction] type:
      *
-     * ```kotlin
-     * when (action) {
-     *     CameraAction.TAKE_PHOTO      -> cameraXManager.takePhoto()
-     *     CameraAction.START_VIDEO     -> cameraXManager.startRecording()
-     *     CameraAction.STOP_VIDEO      -> cameraXManager.stopRecording()
-     *     CameraAction.SWITCH_CAMERA   -> cameraXManager.switchCamera()
-     *     CameraAction.TOGGLE_FLASH    -> cameraXManager.toggleFlash()
-     *     CameraAction.NONE            -> { /* no-op */ }
-     * }
-     * ```
+     * - [CameraAction.TAKE_PHOTO]: Captures a photo and saves it to the gallery
+     * - [CameraAction.START_VIDEO]: Begins video recording
+     * - [CameraAction.STOP_VIDEO]: Stops the current video recording
+     * - [CameraAction.SWITCH_CAMERA]: Toggles between front and rear camera
+     * - [CameraAction.TOGGLE_FLASH]: Cycles the flash mode (auto/on/off)
      */
     private fun executeCameraAction(action: CameraAction) {
         Log.i(TAG, "▶ Camera action triggered: ${action.displayName}")
 
         when (action) {
-            CameraAction.TAKE_PHOTO    -> Log.i(TAG, "📸 Take photo")
-            CameraAction.START_VIDEO   -> Log.i(TAG, "🎬 Start video recording")
-            CameraAction.STOP_VIDEO    -> Log.i(TAG, "⏹ Stop video recording")
-            CameraAction.SWITCH_CAMERA -> Log.i(TAG, "🔄 Switch camera")
-            CameraAction.TOGGLE_FLASH  -> Log.i(TAG, "⚡ Toggle flash")
-            CameraAction.NONE          -> { /* should not reach here — GestureEngine filters NONE */ }
+            CameraAction.TAKE_PHOTO -> {
+                executeTakePhoto()
+            }
+            CameraAction.START_VIDEO -> {
+                executeStartVideo()
+            }
+            CameraAction.STOP_VIDEO -> {
+                executeStopVideo()
+            }
+            CameraAction.SWITCH_CAMERA -> {
+                executeSwitchCamera()
+            }
+            CameraAction.TOGGLE_FLASH -> {
+                executeToggleFlash()
+            }
+            CameraAction.NONE -> {
+                // Should not reach here — GestureEngine filters NONE
+            }
         }
 
         // Update notification to reflect the triggered action.
         val notification = buildNotification("Last: ${action.displayName}")
         notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+
+    // -----------------------------------------------------------------------
+    // Camera Action Implementations
+    // -----------------------------------------------------------------------
+
+    /**
+     * Execute photo capture.
+     */
+    private fun executeTakePhoto() {
+        val cameraManager = cameraXManager ?: run {
+            Log.e(TAG, "CameraXManager not initialized")
+            return
+        }
+
+        // Create photo file in app-specific directory
+        val photoDir = File(
+            getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+            "EarShot"
+        )
+        if (!photoDir.exists()) {
+            photoDir.mkdirs()
+        }
+
+        val photoFile = File(photoDir, photoOutput.generateUniqueFilename())
+
+        cameraManager.takePhoto(
+            outputFile = photoFile,
+            onSuccess = { uri ->
+                Log.i(TAG, "📸 Photo saved: $uri")
+                // Insert into MediaStore gallery
+                photoOutput.insertToGallery(photoFile)
+            },
+            onError = { e ->
+                Log.e(TAG, "📸 Photo capture failed", e)
+            }
+        )
+    }
+
+    /**
+     * Start video recording.
+     */
+    private fun executeStartVideo() {
+        val cameraManager = cameraXManager ?: run {
+            Log.e(TAG, "CameraXManager not initialized")
+            return
+        }
+
+        // Create video file in app-specific directory
+        val videoDir = File(
+            getExternalFilesDir(Environment.DIRECTORY_MOVIES),
+            "EarShot"
+        )
+        if (!videoDir.exists()) {
+            videoDir.mkdirs()
+        }
+
+        val videoFile = File(videoDir, "VID_${photoOutput.generateUniqueFilename()}")
+
+        cameraManager.startVideoRecording(
+            outputFile = videoFile,
+            onSuccess = { uri ->
+                Log.i(TAG, "🎬 Video recording started: $uri")
+            },
+            onError = { e ->
+                Log.e(TAG, "🎬 Video recording failed", e)
+            }
+        )
+    }
+
+    /**
+     * Stop video recording.
+     */
+    private fun executeStopVideo() {
+        val cameraManager = cameraXManager ?: run {
+            Log.e(TAG, "CameraXManager not initialized")
+            return
+        }
+
+        cameraManager.stopVideoRecording()
+        Log.i(TAG, "⏹ Video recording stopped")
+    }
+
+    /**
+     * Switch between front and rear camera.
+     */
+    private fun executeSwitchCamera() {
+        val cameraManager = cameraXManager ?: run {
+            Log.e(TAG, "CameraXManager not initialized")
+            return
+        }
+
+        val currentFacing = cameraManager.getFacing()
+        val newFacing = when (currentFacing) {
+            CameraSelection.REAR -> CameraSelection.FRONT
+            CameraSelection.FRONT -> CameraSelection.REAR
+        }
+
+        cameraManager.switchCamera(newFacing)
+        Log.i(TAG, "🔄 Switched camera to ${newFacing.name}")
+    }
+
+    /**
+     * Toggle flash mode.
+     */
+    private fun executeToggleFlash() {
+        val cameraManager = cameraXManager ?: run {
+            Log.e(TAG, "CameraXManager not initialized")
+            return
+        }
+
+        cameraManager.toggleFlash()
+        Log.i(TAG, "⚡ Flash mode toggled")
     }
 
     // ---------------------------------------------------------------------------
