@@ -26,25 +26,27 @@ EarShot is an Android application that enables hands-free photography by letting
 | **Media Button Detection** | Foreground service that intercepts hardware media button events from Bluetooth earbuds |
 | **Gesture Engine** | Detects single tap, double tap, triple tap, and long press (600ms threshold) with configurable tap window (300ms) |
 | **Gesture Mapping UI** | Map each gesture type to a camera action via dropdown selectors |
+| **CameraX Integration** | Full camera integration with live preview using CameraX |
+| **Photo Capture** | Capture photos using the rear or front camera |
+| **Video Recording** | Record videos with start/stop functionality |
+| **Camera Switching** | Switch between front and rear cameras seamlessly |
+| **Flash Control** | Toggle flash modes (Auto, On, Off) |
+| **Timer Support** | Configurable timer (Off, 3 seconds, 10 seconds) |
+| **Grid Overlay** | Rule of thirds grid overlay toggle |
 | **Camera Settings UI** | Configure front/rear camera, photo/video mode, grid overlay, and timer options |
 | **Device Management UI** | View paired and connected Bluetooth devices with connection status |
 | **Event History** | Real-time display of detected media button events with timestamps |
 | **Settings Persistence** | All gesture mappings and camera settings saved to SharedPreferences |
-| **Material Design 3** | Modern theming with custom premium color palette |
+| **Material Design 3** | Modern theming with custom premium crayon-like color palette |
+| **Premium UI** | Warm purple/coral/teal colors with gradient headers and rounded corners |
 | **Dark Mode** | Automatic dark theme support (follows system setting) |
 | **Edge-to-Edge UI** | Transparent status/navigation bars with proper insets handling |
 
-### In Progress
-
-- **CameraX Integration** — CameraX dependencies added, actual capture not yet implemented
-- **Real Bluetooth Device Scanning** — UI and repository structure in place, actual scanning pending
-
 ### Planned
 
-- Photo capture via CameraX
-- Video recording (start/stop)
 - Real Bluetooth device discovery and connection
 - MediaSession API integration
+- Gallery integration for captured photos/videos
 
 ## Tech Stack
 
@@ -64,10 +66,12 @@ EarShot is an Android application that enables hands-free photography by letting
 | Navigation Component | 2.7.7 |
 | Lifecycle (ViewModel/LiveData) | 2.7.0 |
 | CameraX | 1.3.1 |
+| CameraX Video | 1.3.1 |
 | ConstraintLayout | 2.1.4 |
 | Activity KTX | 1.8.2 |
 | Fragment KTX | 1.6.2 |
 | Media | 1.7.0 |
+| CoordinatorLayout | 1.2.0 |
 
 ## Architecture
 
@@ -109,8 +113,8 @@ The app follows **MVVM** (Model-View-ViewModel) architecture with Clean Architec
 │       │  ┌─────────────┐      ┌─────┴──────┐    ┌───────────┐     │         │
 │       │  │ MediaButton │      │  Gesture   │    │   Camera  │     │         │
 │       │  │  Service    │      │   Engine   │    │     X     │     │         │
-│       │  └─────────────┘      └────────────┘    └───────────┘     │         │
-│       └───────────────────────────────────────────────────────────┘         │
+│       │  └─────────────┘      └────────────┘    │  Manager  │     │         │
+│       └─────────────────────────────────────────┴───────────┘              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -120,7 +124,8 @@ The app follows **MVVM** (Model-View-ViewModel) architecture with Clean Architec
 - **ViewModels**: One per screen with Factory pattern for dependency injection
 - **Repositories**: DeviceRepository (Bluetooth devices), SettingsRepository (SharedPreferences)
 - **Services**: MediaButtonService (foreground), MediaButtonReceiver (BroadcastReceiver)
-- **Models**: BluetoothDevice, GestureMapping, CameraSettings, MediaButtonEvent, GestureType, CameraAction
+- **Camera**: CameraXManager (CameraX lifecycle and operations), CameraPhotoOutput (photo file handling)
+- **Models**: BluetoothDevice, GestureMapping, CameraSettings, MediaButtonEvent, GestureType, CameraAction, CameraMode, CameraSelection
 
 ## Project Structure
 
@@ -130,8 +135,11 @@ app/src/main/
 │   ├── model/
 │   │   ├── BluetoothDevice.kt
 │   │   ├── CameraSettings.kt
+│   │   ├── CameraMode.kt
+│   │   ├── CameraSelection.kt
 │   │   ├── GestureMapping.kt
-│   │   └── MediaButtonEvent.kt
+│   │   ├── MediaButtonEvent.kt
+│   │   └── TimerOption.kt
 │   ├── repository/
 │   │   ├── DeviceRepository.kt
 │   │   └── SettingsRepository.kt
@@ -139,6 +147,9 @@ app/src/main/
 │   │   ├── GestureEngine.kt
 │   │   ├── MediaButtonReceiver.kt
 │   │   └── MediaButtonService.kt
+│   ├── camera/
+│   │   ├── CameraXManager.kt
+│   │   └── CameraPhotoOutput.kt
 │   ├── ui/
 │   │   ├── MainActivity.kt
 │   │   ├── base/
@@ -171,6 +182,17 @@ app/src/main/
     └── values-night/
 ```
 
+## Premium UI Design
+
+The app features a **premium crayon-like interface** with:
+
+- **Warm Color Palette**: Purple primary (#8B5CF6), Coral secondary (#F97316), Teal tertiary (#14B8A6)
+- **Gradient Headers**: All screens feature gradient headers with smooth transitions
+- **Rounded Corners**: Large rounded corners (16-28dp) for a playful feel
+- **Premium Cards**: Elevated cards with subtle shadows and strokes
+- **Material 3 Components**: Modern Bottom Navigation, FABs, TextInputLayouts
+- **Active Indicators**: Bottom navigation with active state indicators
+
 ## Installation
 
 ### Prerequisites
@@ -201,15 +223,37 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 | `BLUETOOTH_ADMIN` | Device discovery (API < 31) |
 | `BLUETOOTH_CONNECT` | Connect to Bluetooth devices (API 31+) |
 | `BLUETOOTH_SCAN` | Scan for Bluetooth devices (API 31+) |
-| `CAMERA` | Camera capture (placeholder) |
+| `CAMERA` | Camera preview and capture |
+| `RECORD_AUDIO` | Video recording with audio |
 | `FOREGROUND_SERVICE` | Run persistent background service |
 | `FOREGROUND_SERVICE_MEDIA_PLAYBACK` | Media-related foreground service |
 | `POST_NOTIFICATIONS` | Show notifications (Android 13+) |
 | `MEDIA_CONTENT_CONTROL` | Control media playback |
 
+## Camera Features
+
+The Camera screen includes:
+
+- **Full-screen Camera Preview** with CameraX
+- **Capture Button** - Large white button for photo/video capture
+- **Camera Switch** - Toggle between front and rear cameras
+- **Flash Control** - Auto/On/Off toggle
+- **Settings Button** - Opens bottom sheet with camera settings
+- **Gallery Thumbnail** - Shows last captured photo (placeholder)
+- **Recording Indicator** - Red dot and "Recording..." text when video is being recorded
+- **Timer Countdown** - Large countdown display when timer is enabled
+- **Settings Bottom Sheet** - Slide-up panel for camera configuration
+
+### Camera Settings (Bottom Sheet)
+
+- Camera Selection (Front/Rear)
+- Timer (Off, 3s, 10s)
+- Camera Mode (Photo/Video)
+- Grid Overlay (On/Off)
+- Save Settings button
+
 ## Current Limitations
 
-- **No actual camera capture** — Gesture engine logs actions but CameraX capture not implemented
 - **Placeholder device data** — DeviceRepository uses mock data; real Bluetooth scanning pending
 - **Limited earbud compatibility** — Media button support varies by device manufacturer
 - **API 26+ only** — Minimum Android 8.0 required for media button intercept
@@ -219,8 +263,8 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 | Phase | Features |
 |-------|-----------|
 | 1 | Media button detection, gesture engine, gesture mapping UI |
-| 2 | CameraX integration, photo capture |
-| 3 | Video recording, real Bluetooth device scanning |
+| 2 | CameraX integration, photo capture, video recording ✓ |
+| 3 | Real Bluetooth device scanning, gallery integration |
 | 4 | Settings polish, dark mode, beta testing |
 
 ## Contributing
