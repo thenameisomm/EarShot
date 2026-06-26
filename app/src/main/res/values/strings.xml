@@ -47,6 +47,7 @@
     <string name="action_switch_camera">Switch Camera</string>
     <string name="action_toggle_flash">Toggle Flash</string>
     <string name="action_none">None</string>
+    <string name="gallery_thumbnail">Gallery</string>
 
     <!-- Camera Settings Screen -->
     <string name="camera_settings_title">Camera Settings</string>
@@ -65,6 +66,7 @@
     <string name="camera_timer_10s">10 seconds</string>
     <string name="camera_save">Save Settings</string>
     <string name="camera_saved">Settings saved</string>
+    <string name="camera_permission_required">Camera permission is required to use the camera</string>
 
     <!-- Media Button Screen -->
     <string name="nav_media">Media</string>

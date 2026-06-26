@@ -9,7 +9,7 @@
     android:background="@color/md_theme_background"
     tools:context=".ui.device.DeviceFragment">
 
-    <!-- Header Section -->
+    <!-- Header Section with Gradient -->
     <LinearLayout
         android:id="@+id/headerSection"
         android:layout_width="0dp"
@@ -17,7 +17,8 @@
         android:orientation="vertical"
         android:paddingHorizontal="20dp"
         android:paddingTop="48dp"
-        android:paddingBottom="16dp"
+        android:paddingBottom="24dp"
+        android:background="@drawable/bg_header_gradient"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -27,16 +28,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/device_title"
-            android:textAppearance="@style/TextAppearance.EarShot.HeadlineMedium"
-            android:textColor="?attr/colorOnBackground" />
+            android:textAppearance="@style/TextAppearance.EarShot.HeadlineLarge"
+            android:textColor="@color/md_theme_primary" />
 
         <TextView
             android:id="@+id/tvSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="8dp"
             android:text="@string/device_subtitle"
-            android:textAppearance="@style/TextAppearance.EarShot.BodyMedium"
+            android:textAppearance="@style/TextAppearance.EarShot.BodyLarge"
             android:textColor="?attr/colorOnSurfaceVariant" />
 
     </LinearLayout>
@@ -48,9 +49,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="20dp"
         android:text="@string/device_scan"
         app:icon="@drawable/ic_bluetooth"
+        app:iconGravity="textStart"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerSection" />
@@ -85,19 +87,19 @@
         app:layout_constraintTop_toBottomOf="@id/btnScan">
 
         <ImageView
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:src="@drawable/ic_bluetooth"
             app:tint="?attr/colorOnSurfaceVariant"
-            android:alpha="0.5"
+            android:alpha="0.4"
             android:contentDescription="@null" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:text="@string/device_empty"
-            android:textAppearance="@style/TextAppearance.EarShot.BodyLarge"
+            android:textAppearance="@style/TextAppearance.EarShot.TitleMedium"
             android:textColor="?attr/colorOnSurfaceVariant" />
 
     </LinearLayout>
@@ -109,6 +111,7 @@
         android:layout_height="wrap_content"
         android:indeterminate="true"
         android:visibility="gone"
+        app:indicatorColor="@color/md_theme_primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
