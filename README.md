@@ -34,7 +34,9 @@ EarShot is an Android application that enables hands-free photography by letting
 | **Timer Support** | Configurable timer (Off, 3 seconds, 10 seconds) |
 | **Grid Overlay** | Rule of thirds grid overlay toggle |
 | **Camera Settings UI** | Configure front/rear camera, photo/video mode, grid overlay, and timer options |
-| **Device Management UI** | View paired and connected Bluetooth devices with connection status |
+| **Bluetooth Device Scanning** | Real Bluetooth device discovery and connection management |
+| **Paired Devices** | View and connect to previously paired Bluetooth devices |
+| **Gallery Integration** | Browse, view, and delete captured photos and videos |
 | **Event History** | Real-time display of detected media button events with timestamps |
 | **Settings Persistence** | All gesture mappings and camera settings saved to SharedPreferences |
 | **Material Design 3** | Modern theming with custom premium crayon-like color palette |
@@ -44,9 +46,7 @@ EarShot is an Android application that enables hands-free photography by letting
 
 ### Planned
 
-- Real Bluetooth device discovery and connection
-- MediaSession API integration
-- Gallery integration for captured photos/videos
+- MediaSession API integration (optional enhancement)
 
 ## Tech Stack
 
@@ -89,7 +89,8 @@ The app follows **MVVM** (Model-View-ViewModel) architecture with Clean Architec
 ┌───────┼────────────┼────────────┼────────────┼──────────────┼───────────────┐
 │       ▼            ▼            ▼            ▼              ▼               │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
-│  │HomeVM    │  │DeviceVM  │  │GestureVM │  │CameraVM  │  │MediaButtonVM │   │
+│  │Bluetooth │  │Bluetooth │  │GestureVM │  │CameraVM  │  │MediaButtonVM │   │
+│  │ViewModel │  │ViewModel │  │          │  │          │  │              │   │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  └──────┬───────┘   │
 │       │             │             │             │               │           │
 │       └─────────────┴─────────────┴─────────────┴───────────────┘           │
@@ -121,10 +122,11 @@ The app follows **MVVM** (Model-View-ViewModel) architecture with Clean Architec
 
 **Key Components**
 
-- **Fragments**: HomeFragment, DeviceFragment, GestureFragment, CameraFragment, MediaButtonFragment
-- **ViewModels**: One per screen with Factory pattern for dependency injection
-- **Repositories**: DeviceRepository (Bluetooth devices), SettingsRepository (SharedPreferences)
-- **Services**: MediaButtonService (foreground), MediaButtonReceiver (BroadcastReceiver)
+- **Fragments**: HomeFragment, DeviceFragment, GestureFragment, CameraFragment, MediaButtonFragment, GalleryFragment
+- **ViewModels**: BluetoothViewModel, CameraViewModel, GalleryViewModel, GestureViewModel, MediaButtonViewModel
+- **Repositories**: BluetoothRepository, SettingsRepository, GalleryRepository
+- **Services**: MediaButtonService (foreground), MediaButtonReceiver (BroadcastReceiver), GestureEngine
+- **Bluetooth**: BluetoothManager (singleton coordinator), BluetoothScanner, BluetoothConnectionManager, BluetoothPermissionManager, BluetoothStateMonitor
 - **Camera**: CameraXManager (CameraX lifecycle and operations), CameraPhotoOutput (photo file handling)
 - **Models**: BluetoothDevice, GestureMapping, CameraSettings, MediaButtonEvent, GestureType, CameraAction, CameraMode, CameraSelection
 
@@ -141,9 +143,18 @@ app/src/main/
 │   │   ├── GestureMapping.kt
 │   │   ├── MediaButtonEvent.kt
 │   │   └── TimerOption.kt
+│   ├── bluetooth/
+│   │   ├── BluetoothManager.kt
+│   │   ├── BluetoothScanner.kt
+│   │   ├── BluetoothConnectionManager.kt
+│   │   ├── BluetoothPermissionManager.kt
+│   │   ├── BluetoothStateMonitor.kt
+│   │   ├── BluetoothRepository.kt
+│   │   ├── BluetoothState.kt
+│   │   └── BluetoothUiState.kt
 │   ├── repository/
-│   │   ├── DeviceRepository.kt
-│   │   └── SettingsRepository.kt
+│   │   ├── SettingsRepository.kt
+│   │   └── GalleryRepository.kt
 │   ├── service/
 │   │   ├── GestureEngine.kt
 │   │   ├── MediaButtonReceiver.kt
@@ -163,6 +174,9 @@ app/src/main/
 │   │   ├── gesture/
 │   │   │   ├── GestureAdapter.kt
 │   │   │   └── GestureFragment.kt
+│   │   ├── gallery/
+│   │   │   ├── GalleryAdapter.kt
+│   │   │   └── GalleryFragment.kt
 │   │   ├── home/
 │   │   │   └── HomeFragment.kt
 │   │   └── media/
@@ -170,9 +184,9 @@ app/src/main/
 │   │       └── MediaButtonFragment.kt
 │   └── viewmodel/
 │       ├── CameraViewModel.kt
-│       ├── DeviceViewModel.kt
+│       ├── BluetoothViewModel.kt
 │       ├── GestureViewModel.kt
-│       ├── HomeViewModel.kt
+│       ├── GalleryViewModel.kt
 │       └── MediaButtonViewModel.kt
 └── res/
     ├── drawable/
@@ -224,12 +238,29 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 | `BLUETOOTH_ADMIN` | Device discovery (API < 31) |
 | `BLUETOOTH_CONNECT` | Connect to Bluetooth devices (API 31+) |
 | `BLUETOOTH_SCAN` | Scan for Bluetooth devices (API 31+) |
+| `BLUETOOTH_ADVERTISE` | Advertise Bluetooth device (API 31+) |
+| `ACCESS_FINE_LOCATION` | Location required for Bluetooth scanning (legacy) |
+| `NEARBY_WIFI_DEVICES` | BLE scanning on Android 13+ |
 | `CAMERA` | Camera preview and capture |
 | `RECORD_AUDIO` | Video recording with audio |
 | `FOREGROUND_SERVICE` | Run persistent background service |
 | `FOREGROUND_SERVICE_MEDIA_PLAYBACK` | Media-related foreground service |
 | `POST_NOTIFICATIONS` | Show notifications (Android 13+) |
 | `MEDIA_CONTENT_CONTROL` | Control media playback |
+
+## Navigation Flow
+
+The app uses **Bottom Navigation** with 5 main screens accessible from the navigation bar:
+
+| Screen | Description |
+|--------|-------------|
+| **Home** | Welcome screen with Bluetooth status and quick action buttons |
+| **Device** | Bluetooth device management - scan, pair, and connect to earbuds |
+| **Gallery** | Browse captured photos and videos |
+| **Media** | Media button event detection - view detected button press events |
+| **Camera** | Full camera preview with capture controls |
+
+The **Gesture Mapping** screen is accessible from the Home screen via the "Map Gestures" quick action.
 
 ## Camera Features
 
@@ -240,7 +271,7 @@ The Camera screen includes:
 - **Camera Switch** - Toggle between front and rear cameras
 - **Flash Control** - Auto/On/Off toggle
 - **Settings Button** - Opens bottom sheet with camera settings
-- **Gallery Thumbnail** - Shows last captured photo (placeholder)
+- **Gallery Shortcut** - Quick access button to open the Gallery screen
 - **Recording Indicator** - Red dot and "Recording..." text when video is being recorded
 - **Timer Countdown** - Large countdown display when timer is enabled
 - **Settings Bottom Sheet** - Slide-up panel for camera configuration
@@ -255,7 +286,6 @@ The Camera screen includes:
 
 ## Current Limitations
 
-- **Placeholder device data** — DeviceRepository uses mock data; real Bluetooth scanning pending
 - **Limited earbud compatibility** — Media button support varies by device manufacturer
 - **API 26+ only** — Minimum Android 8.0 required for media button intercept
 
@@ -263,10 +293,24 @@ The Camera screen includes:
 
 | Phase | Features |
 |-------|-----------|
-| 1 | Media button detection, gesture engine, gesture mapping UI |
+| 1 | Media button detection, gesture engine, gesture mapping UI ✓ |
 | 2 | CameraX integration, photo capture, video recording ✓ |
-| 3 | Real Bluetooth device scanning, gallery integration |
-| 4 | Settings polish, dark mode, beta testing |
+| 3 | Real Bluetooth device scanning, gallery integration ✓ |
+| 4 | Beta testing, performance optimization, release |
+| 5 | Additional features and improvements |
+
+## Testing
+
+The project includes **Espresso UI tests** for automated testing:
+
+- **HomeScreenTest**: Validates that the Home screen loads correctly and displays key UI elements
+- Tests verify: Bluetooth status, Quick Actions, Bottom Navigation, and status indicators
+
+Run tests:
+```bash
+./gradlew test
+./gradlew connectedAndroidTest
+```
 
 ## Contributing
 
