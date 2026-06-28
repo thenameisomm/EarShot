@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.earshot.R
 import com.earshot.bluetooth.BluetoothDevice
@@ -169,6 +170,11 @@ class DeviceFragment : BaseFragment() {
     }
 
     private fun setupClickListeners() {
+        // Back button navigation
+        binding.btnBack.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
         binding.btnScan.setOnClickListener {
             if (viewModel.getIsScanning()) {
                 viewModel.stopScanning()

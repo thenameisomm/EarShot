@@ -11,8 +11,9 @@ import com.earshot.bluetooth.BluetoothRepository
 import com.earshot.bluetooth.BluetoothState
 import com.earshot.databinding.FragmentHomeBinding
 import com.earshot.ui.base.BaseFragment
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -47,14 +48,19 @@ class HomeFragment : BaseFragment() {
 
     private fun setupObservers() {
         // Observe Bluetooth state
-        CoroutineScope(Dispatchers.Main).launch {
-            repository.bluetoothState.collectLatest { state ->
-                updateConnectionStatus(state)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                repository.bluetoothState.collectLatest { state ->
+                    updateConnectionStatus(state)
+                }
             }
         }
     }
 
     private fun updateConnectionStatus(state: BluetoothState) {
+        // Guard against accessing binding after onDestroyView
+        _binding ?: return
+
         binding.tvStatus.text = when (state) {
             is BluetoothState.Connected -> {
                 getString(R.string.home_status_connected) + ": " + state.device.name
@@ -71,18 +77,17 @@ class HomeFragment : BaseFragment() {
     private fun setupClickListeners() {
         // Navigate to Device screen
         binding.btnConnectDevice.setOnClickListener {
-            findNavController().navigate(R.id.deviceFragment)
+            findNavController().navigate(R.id.action_homeFragment_to_deviceFragment)
         }
 
         // Navigate to Gesture Mapping screen
         binding.btnMapGestures.setOnClickListener {
-            findNavController().navigate(R.id.gestureFragment)
+            findNavController().navigate(R.id.action_homeFragment_to_gestureFragment)
         }
 
-        // Navigate to Camera Settings screen
-        binding.btnCameraSettings.setOnClickListener {
-            findNavController().navigate(R.id.cameraFragment)
-        }
+        // Note: Camera Settings button was removed from layout.
+        // Camera settings are now accessible via the built-in settings button
+        // in the Camera fragment (bottom sheet).
     }
 
     override fun onResume() {

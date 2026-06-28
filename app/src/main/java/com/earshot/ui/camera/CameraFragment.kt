@@ -305,6 +305,11 @@ class CameraFragment : BaseFragment() {
     }
 
     private fun setupClickListeners() {
+        // Back button - navigate up
+        binding.btnBack.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
         // Settings button - opens bottom sheet
         binding.btnSettings.setOnClickListener {
             showSettings()
@@ -351,6 +356,8 @@ class CameraFragment : BaseFragment() {
         // Save button
         binding.btnSave.setOnClickListener {
             viewModel.saveSettings()
+            // Close settings panel after saving (don't navigate away)
+            hideSettings()
         }
 
         // Capture button
