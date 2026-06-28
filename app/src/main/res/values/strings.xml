@@ -6,6 +6,7 @@
     <string name="nav_home">Home</string>
     <string name="nav_device">Device</string>
     <string name="nav_gesture">Gesture</string>
+    <string name="nav_gallery">Gallery</string>
     <string name="nav_camera">Camera</string>
 
     <!-- Home Screen -->
@@ -97,6 +98,22 @@
     <string name="media_clear">Clear</string>
     <string name="media_empty">No events detected yet.\nStart the service and press buttons on your Bluetooth earbuds.</string>
     <string name="media_event">Media button event</string>
+
+    <!-- Gallery Screen -->
+    <string name="gallery_title">Gallery</string>
+    <string name="empty_gallery">No media yet</string>
+    <string name="empty_gallery_hint">Capture photos or videos to see them here</string>
+    <string name="open_camera">Open Camera</string>
+    <string name="media_count">%1$d photos and videos</string>
+    <string name="media_thumbnail">Media thumbnail</string>
+    <string name="video_indicator">Video</string>
+    <string name="delete_media">Delete Media</string>
+    <string name="delete_media_confirmation">Are you sure you want to delete this %1$s?</string>
+    <string name="media_deleted">Media deleted</string>
+    <string name="media_delete_failed">Failed to delete media</string>
+    <string name="photo">photo</string>
+    <string name="video">video</string>
+    <string name="delete">Delete</string>
 
     <!-- General -->
     <string name="ok">OK</string>

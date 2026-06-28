@@ -12,6 +12,11 @@
         android:title="@string/nav_device" />
 
     <item
+        android:id="@+id/galleryFragment"
+        android:icon="@drawable/ic_gallery"
+        android:title="@string/nav_gallery" />
+
+    <item
         android:id="@+id/mediaButtonFragment"
         android:icon="@drawable/ic_media_button"
         android:title="@string/nav_media" />

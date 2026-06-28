@@ -107,6 +107,9 @@ class CameraViewModel(
 
     val timerOptions: List<TimerOption> = TimerOption.entries
 
+    // Track current video file for MediaStore insertion
+    private var currentVideoFile: File? = null
+
     // -----------------------------------------------------------------------
     // Initialization
     // -----------------------------------------------------------------------
@@ -231,6 +234,10 @@ class CameraViewModel(
                     context.getExternalFilesDir(Environment.DIRECTORY_MOVIES),
                     "EarShot/${videoOutputFilename()}"
                 )
+                // Ensure directory exists
+                videoFile.parentFile?.mkdirs()
+                // Track the video file for later insertion to MediaStore
+                currentVideoFile = videoFile
 
                 cameraManager.startVideoRecording(
                     outputFile = videoFile,
@@ -242,6 +249,7 @@ class CameraViewModel(
                         }
                     },
                     onError = { e ->
+                        currentVideoFile = null
                         launch(Dispatchers.Main) {
                             _error.value = "Failed to start video recording: ${e.message}"
                         }
@@ -259,8 +267,22 @@ class CameraViewModel(
      * Stop video recording.
      */
     fun stopVideo() {
+        val videoFile = currentVideoFile
         _cameraXManager.value?.stopVideoRecording()
         _isRecording.value = false
+
+        // Insert video to gallery after recording stops
+        if (videoFile != null && videoFile.exists()) {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    photoOutput.insertVideoToGallery(videoFile)
+                    Log.d(TAG, "Video inserted to gallery: ${videoFile.absolutePath}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to insert video to gallery", e)
+                }
+                currentVideoFile = null
+            }
+        }
     }
 
     /**

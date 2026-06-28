@@ -35,4 +35,10 @@
         android:label="@string/nav_media"
         tools:layout="@layout/fragment_media_button" />
 
+    <fragment
+        android:id="@+id/galleryFragment"
+        android:name="com.earshot.ui.gallery.GalleryFragment"
+        android:label="@string/nav_gallery"
+        tools:layout="@layout/fragment_gallery" />
+
 </navigation>
