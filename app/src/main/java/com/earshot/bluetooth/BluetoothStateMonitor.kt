@@ -137,7 +137,14 @@ class BluetoothStateMonitor(private val context: Context) {
     @SuppressLint("MissingPermission")
     fun enableBluetooth(): Boolean {
         return try {
-            adapter?.enable() == true
+            // Use the non-deprecated method: startActivity with ACTION_REQUEST_ENABLE
+            // Return true to indicate the intent was sent (the actual result comes via broadcast)
+            adapter?.let {
+                val enableIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                enableIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(enableIntent)
+                true
+            } ?: false
         } catch (e: Exception) {
             Log.e(TAG, "Failed to enable Bluetooth", e)
             false

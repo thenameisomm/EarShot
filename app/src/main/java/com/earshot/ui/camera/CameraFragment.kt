@@ -398,10 +398,11 @@ class CameraFragment : BaseFragment() {
 
     private fun startCountdownTimer(seconds: Int) {
         binding.tvTimer.visibility = View.VISIBLE
-        var remainingSeconds = seconds
 
         countDownTimer?.cancel()
         countDownTimer = object : CountDownTimer((seconds * 1000).toLong(), 1000) {
+            var remainingSeconds: Int = seconds
+
             override fun onTick(millisUntilFinished: Long) {
                 remainingSeconds = (millisUntilFinished / 1000).toInt() + 1
                 binding.tvTimer.text = remainingSeconds.toString()

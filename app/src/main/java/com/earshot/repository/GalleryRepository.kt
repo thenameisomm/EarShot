@@ -163,11 +163,6 @@ class GalleryRepository(private val context: Context) {
     suspend fun getMediaDetails(uri: Uri): MediaDetails? = withContext(Dispatchers.IO) {
         try {
             val isVideo = uri.toString().contains("video")
-            val mediaUri = if (isVideo) {
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-            } else {
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            }
 
             val projection = if (isVideo) {
                 arrayOf(
@@ -282,12 +277,6 @@ class GalleryRepository(private val context: Context) {
 
     private fun getDateAdded(uri: Uri, type: MediaType): Long {
         return try {
-            val mediaUri = if (type == MediaType.VIDEO) {
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-            } else {
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            }
-
             val projection = arrayOf(
                 if (type == MediaType.VIDEO) MediaStore.Video.Media.DATE_ADDED
                 else MediaStore.Images.Media.DATE_ADDED
