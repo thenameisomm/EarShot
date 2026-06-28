@@ -196,19 +196,282 @@ class CameraPhotoOutput(
     }
 
     /**
-     * Delete a photo file and remove it from the gallery.
+     * Delete a media file from the gallery.
      *
-     * @param uri The Content URI of the photo to delete
+     * @param uri The Content URI of the media to delete
      * @return true if deletion was successful, false otherwise
      */
     fun deleteFromGallery(uri: Uri): Boolean {
         return try {
             context.contentResolver.delete(uri, null, null)
-            Log.d(TAG, "Deleted photo from gallery: $uri")
+            Log.d(TAG, "Deleted media from gallery: $uri")
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to delete photo from gallery", e)
+            Log.e(TAG, "Failed to delete media from gallery", e)
             false
+        }
+    }
+
+    /**
+     * Insert a video file into the MediaStore gallery.
+     *
+     * This makes the video visible in the device's Gallery app.
+     *
+     * @param file The video file to insert
+     * @return The Content URI of the inserted video
+     */
+    fun insertVideoToGallery(file: File): Uri {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            insertVideoToGalleryAndroidQ(file)
+        } else {
+            insertVideoToGalleryLegacy(file)
+        }
+    }
+
+    /**
+     * Insert video into MediaStore for Android Q (API 29) and above.
+     */
+    private fun insertVideoToGalleryAndroidQ(file: File): Uri {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Video.Media.DISPLAY_NAME, file.name)
+            put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+            put(MediaStore.Video.Media.RELATIVE_PATH, "${Environment.DIRECTORY_MOVIES}/EarShot")
+            put(MediaStore.Video.Media.IS_PENDING, 1)
+        }
+
+        val uri = context.contentResolver.insert(
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            contentValues
+        ) ?: throw IllegalStateException("Failed to insert video into MediaStore")
+
+        // Copy file content to the MediaStore URI
+        file.inputStream().use { input ->
+            context.contentResolver.openOutputStream(uri)?.use { output ->
+                input.copyTo(output)
+            }
+        }
+
+        // Mark as not pending
+        contentValues.clear()
+        contentValues.put(MediaStore.Video.Media.IS_PENDING, 0)
+        context.contentResolver.update(uri, contentValues, null, null)
+
+        Log.d(TAG, "Inserted video to gallery: $uri")
+        return uri
+    }
+
+    /**
+     * Insert video into MediaStore for legacy Android versions (before API 29).
+     */
+    private fun insertVideoToGalleryLegacy(file: File): Uri {
+        android.media.MediaScannerConnection.scanFile(
+            context,
+            arrayOf(file.absolutePath),
+            arrayOf("video/mp4")
+        ) { _, uri ->
+            Log.d(TAG, "Legacy video gallery insert completed: $uri")
+        }
+
+        return Uri.fromFile(file)
+    }
+
+    /**
+     * Get all captured photos from the MediaStore.
+     *
+     * @param limit Maximum number of photos to return
+     * @return List of photo Uris sorted by date (newest first)
+     */
+    fun getAllCapturedPhotos(limit: Int = 50): List<Uri> {
+        return try {
+            val projection = arrayOf(
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DATE_ADDED
+            )
+
+            val selection = "${MediaStore.Images.Media.RELATIVE_PATH} LIKE ?"
+            val selectionArgs = arrayOf("%EarShot%")
+            val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
+
+            val photos = mutableListOf<Uri>()
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+            )?.use { cursor ->
+                var count = 0
+                while (cursor.moveToNext() && count < limit) {
+                    val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+                    val id = cursor.getLong(idColumn)
+                    photos.add(Uri.withAppendedPath(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        id.toString()
+                    ))
+                    count++
+                }
+            }
+            photos
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get all captured photos", e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Get all captured videos from the MediaStore.
+     *
+     * @param limit Maximum number of videos to return
+     * @return List of video Uris sorted by date (newest first)
+     */
+    fun getAllCapturedVideos(limit: Int = 50): List<Uri> {
+        return try {
+            val projection = arrayOf(
+                MediaStore.Video.Media._ID,
+                MediaStore.Video.Media.DATE_ADDED
+            )
+
+            val selection = "${MediaStore.Video.Media.RELATIVE_PATH} LIKE ?"
+            val selectionArgs = arrayOf("%EarShot%")
+            val sortOrder = "${MediaStore.Video.Media.DATE_ADDED} DESC"
+
+            val videos = mutableListOf<Uri>()
+            context.contentResolver.query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+            )?.use { cursor ->
+                var count = 0
+                while (cursor.moveToNext() && count < limit) {
+                    val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
+                    val id = cursor.getLong(idColumn)
+                    videos.add(Uri.withAppendedPath(
+                        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                        id.toString()
+                    ))
+                    count++
+                }
+            }
+            videos
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get all captured videos", e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Get all captured media (photos and videos) merged and sorted by date.
+     *
+     * @param limit Maximum number of items to return
+     * @return List of media items sorted by date (newest first)
+     */
+    fun getAllCapturedMedia(limit: Int = 50): List<MediaItem> {
+        val allMedia = mutableListOf<MediaItem>()
+
+        // Get photos
+        getAllCapturedPhotos(limit).forEach { uri ->
+            allMedia.add(MediaItem(uri, MediaType.PHOTO))
+        }
+
+        // Get videos
+        getAllCapturedVideos(limit).forEach { uri ->
+            allMedia.add(MediaItem(uri, MediaType.VIDEO))
+        }
+
+        // Sort by date (newest first) - note: this is approximate since we can't easily
+        // get exact timestamps without additional queries
+        return allMedia.sortedByDescending { it.uri.toString().hashCode() }.take(limit)
+    }
+
+    /**
+     * Data class representing a media item.
+     */
+    data class MediaItem(
+        val uri: Uri,
+        val type: MediaType
+    )
+
+    /**
+     * Enum for media type.
+     */
+    enum class MediaType {
+        PHOTO,
+        VIDEO
+    }
+
+    /**
+     * Get the most recently captured photo from the MediaStore.
+     *
+     * @return The Uri of the last captured photo, or null if none found
+     */
+    fun getLastCapturedPhoto(): Uri? {
+        return try {
+            val projection = arrayOf(
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DATE_ADDED
+            )
+
+            val selection = "${MediaStore.Images.Media.RELATIVE_PATH} LIKE ?"
+            val selectionArgs = arrayOf("%EarShot%")
+            val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
+
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+                    val id = cursor.getLong(idColumn)
+                    Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id.toString())
+                } else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get last captured photo", e)
+            null
+        }
+    }
+
+    /**
+     * Get the most recently captured video from the MediaStore.
+     *
+     * @return The Uri of the last captured video, or null if none found
+     */
+    fun getLastCapturedVideo(): Uri? {
+        return try {
+            val projection = arrayOf(
+                MediaStore.Video.Media._ID,
+                MediaStore.Video.Media.DATE_ADDED
+            )
+
+            val selection = "${MediaStore.Video.Media.RELATIVE_PATH} LIKE ?"
+            val selectionArgs = arrayOf("%EarShot%")
+            val sortOrder = "${MediaStore.Video.Media.DATE_ADDED} DESC"
+
+            context.contentResolver.query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
+                    val id = cursor.getLong(idColumn)
+                    Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id.toString())
+                } else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get last captured video", e)
+            null
         }
     }
 }

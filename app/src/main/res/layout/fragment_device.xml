@@ -9,7 +9,7 @@
     android:background="@color/md_theme_background"
     tools:context=".ui.device.DeviceFragment">
 
-    <!-- Header Section with Gradient -->
+    <!-- Header Section with Gradient and Back Button -->
     <LinearLayout
         android:id="@+id/headerSection"
         android:layout_width="0dp"
@@ -23,13 +23,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/device_title"
-            android:textAppearance="@style/TextAppearance.EarShot.HeadlineLarge"
-            android:textColor="@color/md_theme_primary" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="@color/md_theme_primary"
+                android:contentDescription="@string/nav_home" />
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="@string/device_title"
+                android:textAppearance="@style/TextAppearance.EarShot.HeadlineLarge"
+                android:textColor="@color/md_theme_primary" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvSubtitle"
@@ -57,52 +76,173 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerSection" />
 
-    <!-- Device List -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvDevices"
+    <!-- Connection Status Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardConnectionStatus"
+        style="@style/Widget.EarShot.Card.Premium"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnScan"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/ivConnectionStatus"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_bluetooth"
+                app:tint="@color/md_theme_primary"
+                android:contentDescription="@null" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvConnectionStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.EarShot.TitleMedium"
+                    tools:text="Connected to AirPods Pro" />
+
+                <TextView
+                    android:id="@+id/tvConnectionState"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.EarShot.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="Connected" />
+
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDisconnect"
+                style="@style/Widget.EarShot.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/device_unpair" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Device List ScrollView -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         android:clipToPadding="false"
-        android:paddingHorizontal="20dp"
         android:paddingBottom="16dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnScan"
-        tools:listitem="@layout/item_device" />
+        app:layout_constraintTop_toBottomOf="@id/cardConnectionStatus">
 
-    <!-- Empty State -->
-    <LinearLayout
-        android:id="@+id/tvEmpty"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnScan">
-
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:src="@drawable/ic_bluetooth"
-            app:tint="?attr/colorOnSurfaceVariant"
-            android:alpha="0.4"
-            android:contentDescription="@null" />
-
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/device_empty"
-            android:textAppearance="@style/TextAppearance.EarShot.TitleMedium"
-            android:textColor="?attr/colorOnSurfaceVariant" />
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp">
 
-    </LinearLayout>
+            <!-- Paired Devices Section -->
+            <TextView
+                android:id="@+id/tvPairedDevicesHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/device_paired_devices"
+                android:textAppearance="@style/TextAppearance.EarShot.TitleMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPairedDevices"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_device"
+                tools:itemCount="2" />
+
+            <!-- Discovered Devices Section -->
+            <TextView
+                android:id="@+id/tvDiscoveredDevicesHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/device_discovered_devices"
+                android:textAppearance="@style/TextAppearance.EarShot.TitleMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvDiscoveredDevices"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_device"
+                tools:itemCount="3" />
+
+            <!-- Empty State -->
+            <LinearLayout
+                android:id="@+id/tvEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="48dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/ic_bluetooth"
+                    app:tint="?attr/colorOnSurfaceVariant"
+                    android:alpha="0.4"
+                    android:contentDescription="@null" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/device_empty"
+                    android:textAppearance="@style/TextAppearance.EarShot.TitleMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/device_empty_subtitle"
+                    android:textAppearance="@style/TextAppearance.EarShot.BodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
     <!-- Loading Indicator -->
     <com.google.android.material.progressindicator.CircularProgressIndicator

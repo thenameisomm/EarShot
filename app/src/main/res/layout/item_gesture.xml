@@ -55,6 +55,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:hint="@string/action_take_photo"
+            app:endIconMode="dropdown_menu"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/iconContainer"
             app:layout_constraintTop_toBottomOf="@id/tvGestureName">

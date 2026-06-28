@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.earshot.R
 import com.earshot.camera.CameraPhotoOutput
 import com.earshot.camera.CameraXManager
@@ -304,6 +305,11 @@ class CameraFragment : BaseFragment() {
     }
 
     private fun setupClickListeners() {
+        // Back button - navigate up
+        binding.btnBack.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
         // Settings button - opens bottom sheet
         binding.btnSettings.setOnClickListener {
             showSettings()
@@ -350,6 +356,8 @@ class CameraFragment : BaseFragment() {
         // Save button
         binding.btnSave.setOnClickListener {
             viewModel.saveSettings()
+            // Close settings panel after saving (don't navigate away)
+            hideSettings()
         }
 
         // Capture button
@@ -382,8 +390,7 @@ class CameraFragment : BaseFragment() {
 
         // Gallery thumbnail click
         binding.cardGallery.setOnClickListener {
-            // Could open gallery app - for now just show a toast
-            Toast.makeText(requireContext(), "Open gallery", Toast.LENGTH_SHORT).show()
+            openGallery()
         }
 
         // Drag handle to close settings
@@ -398,10 +405,11 @@ class CameraFragment : BaseFragment() {
 
     private fun startCountdownTimer(seconds: Int) {
         binding.tvTimer.visibility = View.VISIBLE
-        var remainingSeconds = seconds
 
         countDownTimer?.cancel()
         countDownTimer = object : CountDownTimer((seconds * 1000).toLong(), 1000) {
+            var remainingSeconds: Int = seconds
+
             override fun onTick(millisUntilFinished: Long) {
                 remainingSeconds = (millisUntilFinished / 1000).toInt() + 1
                 binding.tvTimer.text = remainingSeconds.toString()
@@ -477,6 +485,14 @@ class CameraFragment : BaseFragment() {
             // Keep placeholder if image fails to load
             binding.ivGalleryPlaceholder.visibility = View.VISIBLE
         }
+    }
+
+    /**
+     * Open the in-app gallery to view captured photos/videos.
+     */
+    private fun openGallery() {
+        // Navigate to the in-app gallery
+        findNavController().navigate(R.id.galleryFragment)
     }
 
     // -----------------------------------------------------------------------

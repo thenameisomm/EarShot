@@ -9,30 +9,80 @@
         android:id="@+id/homeFragment"
         android:name="com.earshot.ui.home.HomeFragment"
         android:label="@string/nav_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home">
+
+        <action
+            android:id="@+id/action_homeFragment_to_deviceFragment"
+            app:destination="@id/deviceFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="false" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_gestureFragment"
+            app:destination="@id/gestureFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="false" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_cameraFragment"
+            app:destination="@id/cameraFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="false" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/deviceFragment"
         android:name="com.earshot.ui.device.DeviceFragment"
         android:label="@string/nav_device"
-        tools:layout="@layout/fragment_device" />
+        tools:layout="@layout/fragment_device">
+
+        <action
+            android:id="@+id/action_deviceFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/gestureFragment"
         android:name="com.earshot.ui.gesture.GestureFragment"
         android:label="@string/nav_gesture"
-        tools:layout="@layout/fragment_gesture" />
+        tools:layout="@layout/fragment_gesture">
+
+        <action
+            android:id="@+id/action_gestureFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/cameraFragment"
         android:name="com.earshot.ui.camera.CameraFragment"
         android:label="@string/nav_camera"
-        tools:layout="@layout/fragment_camera" />
+        tools:layout="@layout/fragment_camera">
+
+        <action
+            android:id="@+id/action_cameraFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/mediaButtonFragment"
         android:name="com.earshot.ui.media.MediaButtonFragment"
         android:label="@string/nav_media"
         tools:layout="@layout/fragment_media_button" />
+
+    <fragment
+        android:id="@+id/galleryFragment"
+        android:name="com.earshot.ui.gallery.GalleryFragment"
+        android:label="@string/nav_gallery"
+        tools:layout="@layout/fragment_gallery" />
 
 </navigation>

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.earshot.R
 import com.earshot.databinding.FragmentGestureBinding
@@ -50,7 +51,8 @@ class GestureFragment : BaseFragment() {
             availableActions = viewModel.availableActions,
             onActionSelected = { gestureType, action ->
                 viewModel.updateGestureAction(gestureType, action)
-            }
+            },
+            context = requireContext()
         )
 
         binding.rvGestures.apply {
@@ -78,8 +80,14 @@ class GestureFragment : BaseFragment() {
     }
 
     private fun setupClickListeners() {
+        // Back button navigation
+        binding.btnBack.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
         binding.btnSave.setOnClickListener {
             viewModel.saveMappings()
+            findNavController().navigateUp()
         }
 
         binding.btnReset.setOnClickListener {

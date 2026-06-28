@@ -38,15 +38,8 @@ class MainActivity : AppCompatActivity() {
      */
     private fun setupEdgeToEdge() {
         // Apply windowInsets to the container layout
-        binding.container.setOnApplyWindowInsetsListener { view, windowInsets ->
-            val insets = windowInsets.getInsets(
-                android.view.WindowInsets.Type.systemBars()
-            )
-
-            // Apply top inset to the nav host fragment area
-            // Bottom inset will be handled by the bottom navigation
-
-            // Return the insets to be consumed
+        binding.container.setOnApplyWindowInsetsListener { _, windowInsets ->
+            // Consume insets for the container
             windowInsets
         }
 

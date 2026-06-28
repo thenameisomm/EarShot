@@ -7,23 +7,28 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.earshot.R
+import com.earshot.bluetooth.BluetoothRepository
+import com.earshot.bluetooth.BluetoothState
 import com.earshot.databinding.FragmentHomeBinding
-import com.earshot.repository.DeviceRepository
 import com.earshot.ui.base.BaseFragment
-import com.earshot.viewmodel.HomeViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  * Home Screen Fragment.
+ *
  * Displays the app overview, Bluetooth connection status, and quick action buttons.
+ * Shows whether a Bluetooth device is connected.
  */
 class HomeFragment : BaseFragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: HomeViewModel by viewModels {
-        HomeViewModel.Factory(DeviceRepository())
-    }
+    private val repository by lazy { BluetoothRepository(requireContext()) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,17 +47,29 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun setupObservers() {
-        viewModel.isConnected.observe(viewLifecycleOwner) { isConnected ->
-            binding.tvStatus.text = if (isConnected) {
-                getString(R.string.home_status_connected)
-            } else {
-                getString(R.string.home_status_disconnected)
+        // Observe Bluetooth state
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                repository.bluetoothState.collectLatest { state ->
+                    updateConnectionStatus(state)
+                }
             }
         }
+    }
 
-        viewModel.connectedDeviceName.observe(viewLifecycleOwner) { deviceName ->
-            if (deviceName != null) {
-                binding.tvStatus.text = "${getString(R.string.home_status_connected)}: $deviceName"
+    private fun updateConnectionStatus(state: BluetoothState) {
+        // Guard against accessing binding after onDestroyView
+        _binding ?: return
+
+        binding.tvStatus.text = when (state) {
+            is BluetoothState.Connected -> {
+                getString(R.string.home_status_connected) + ": " + state.device.name
+            }
+            is BluetoothState.Connecting -> {
+                getString(R.string.home_status_connected) + "..."
+            }
+            else -> {
+                getString(R.string.home_status_disconnected)
             }
         }
     }
@@ -60,23 +77,26 @@ class HomeFragment : BaseFragment() {
     private fun setupClickListeners() {
         // Navigate to Device screen
         binding.btnConnectDevice.setOnClickListener {
-            findNavController().navigate(R.id.deviceFragment)
+            findNavController().navigate(R.id.action_homeFragment_to_deviceFragment)
         }
 
         // Navigate to Gesture Mapping screen
         binding.btnMapGestures.setOnClickListener {
-            findNavController().navigate(R.id.gestureFragment)
+            findNavController().navigate(R.id.action_homeFragment_to_gestureFragment)
         }
 
-        // Navigate to Camera Settings screen
-        binding.btnCameraSettings.setOnClickListener {
-            findNavController().navigate(R.id.cameraFragment)
-        }
+        // Note: Camera Settings button was removed from layout.
+        // Camera settings are now accessible via the built-in settings button
+        // in the Camera fragment (bottom sheet).
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.refreshConnectionStatus()
+        // Refresh connection status
+        if (repository.isReady()) {
+            val state = repository.bluetoothState.value
+            updateConnectionStatus(state)
+        }
     }
 
     override fun onDestroyView() {

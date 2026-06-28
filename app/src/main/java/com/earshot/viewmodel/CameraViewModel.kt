@@ -3,6 +3,7 @@ package com.earshot.viewmodel
 import android.app.Application
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -47,6 +48,10 @@ class CameraViewModel(
     application: Application,
     private val settingsRepository: SettingsRepository
 ) : AndroidViewModel(application) {
+
+    companion object {
+        private const val TAG = "CameraViewModel"
+    }
 
     // -----------------------------------------------------------------------
     // Dependencies
@@ -101,6 +106,9 @@ class CameraViewModel(
     val error: LiveData<String?> = _error
 
     val timerOptions: List<TimerOption> = TimerOption.entries
+
+    // Track current video file for MediaStore insertion
+    private var currentVideoFile: File? = null
 
     // -----------------------------------------------------------------------
     // Initialization
@@ -178,7 +186,6 @@ class CameraViewModel(
             }
 
             try {
-                val photoFile = photoOutput.createPhotoFile()
                 val outputFile = File(
                     context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
                     "EarShot/${photoOutput.generateUniqueFilename()}"
@@ -187,6 +194,12 @@ class CameraViewModel(
                 cameraManager.takePhoto(
                     outputFile = outputFile,
                     onSuccess = { uri ->
+                        // Insert photo to gallery so it's visible in system gallery
+                        try {
+                            photoOutput.insertToGallery(outputFile)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to insert photo to gallery", e)
+                        }
                         _photoUri.value = uri
                         launch(Dispatchers.Main) {
                             _error.value = null
@@ -221,6 +234,10 @@ class CameraViewModel(
                     context.getExternalFilesDir(Environment.DIRECTORY_MOVIES),
                     "EarShot/${videoOutputFilename()}"
                 )
+                // Ensure directory exists
+                videoFile.parentFile?.mkdirs()
+                // Track the video file for later insertion to MediaStore
+                currentVideoFile = videoFile
 
                 cameraManager.startVideoRecording(
                     outputFile = videoFile,
@@ -232,6 +249,7 @@ class CameraViewModel(
                         }
                     },
                     onError = { e ->
+                        currentVideoFile = null
                         launch(Dispatchers.Main) {
                             _error.value = "Failed to start video recording: ${e.message}"
                         }
@@ -249,8 +267,22 @@ class CameraViewModel(
      * Stop video recording.
      */
     fun stopVideo() {
+        val videoFile = currentVideoFile
         _cameraXManager.value?.stopVideoRecording()
         _isRecording.value = false
+
+        // Insert video to gallery after recording stops
+        if (videoFile != null && videoFile.exists()) {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    photoOutput.insertVideoToGallery(videoFile)
+                    Log.d(TAG, "Video inserted to gallery: ${videoFile.absolutePath}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to insert video to gallery", e)
+                }
+                currentVideoFile = null
+            }
+        }
     }
 
     /**
