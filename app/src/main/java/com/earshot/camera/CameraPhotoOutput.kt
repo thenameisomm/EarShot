@@ -211,4 +211,78 @@ class CameraPhotoOutput(
             false
         }
     }
+
+    /**
+     * Get the most recently captured photo from the MediaStore.
+     *
+     * @return The Uri of the last captured photo, or null if none found
+     */
+    fun getLastCapturedPhoto(): Uri? {
+        return try {
+            val projection = arrayOf(
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DATE_ADDED
+            )
+
+            val selection = "${MediaStore.Images.Media.RELATIVE_PATH} LIKE ?"
+            val selectionArgs = arrayOf("%EarShot%")
+            val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
+
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+                    val id = cursor.getLong(idColumn)
+                    Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id.toString())
+                } else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get last captured photo", e)
+            null
+        }
+    }
+
+    /**
+     * Get the most recently captured video from the MediaStore.
+     *
+     * @return The Uri of the last captured video, or null if none found
+     */
+    fun getLastCapturedVideo(): Uri? {
+        return try {
+            val projection = arrayOf(
+                MediaStore.Video.Media._ID,
+                MediaStore.Video.Media.DATE_ADDED
+            )
+
+            val selection = "${MediaStore.Video.Media.RELATIVE_PATH} LIKE ?"
+            val selectionArgs = arrayOf("%EarShot%")
+            val sortOrder = "${MediaStore.Video.Media.DATE_ADDED} DESC"
+
+            context.contentResolver.query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
+                    val id = cursor.getLong(idColumn)
+                    Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id.toString())
+                } else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get last captured video", e)
+            null
+        }
+    }
 }

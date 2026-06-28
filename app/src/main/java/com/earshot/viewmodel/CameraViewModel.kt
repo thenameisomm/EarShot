@@ -3,6 +3,7 @@ package com.earshot.viewmodel
 import android.app.Application
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -47,6 +48,10 @@ class CameraViewModel(
     application: Application,
     private val settingsRepository: SettingsRepository
 ) : AndroidViewModel(application) {
+
+    companion object {
+        private const val TAG = "CameraViewModel"
+    }
 
     // -----------------------------------------------------------------------
     // Dependencies
@@ -178,7 +183,6 @@ class CameraViewModel(
             }
 
             try {
-                val photoFile = photoOutput.createPhotoFile()
                 val outputFile = File(
                     context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
                     "EarShot/${photoOutput.generateUniqueFilename()}"
@@ -187,6 +191,12 @@ class CameraViewModel(
                 cameraManager.takePhoto(
                     outputFile = outputFile,
                     onSuccess = { uri ->
+                        // Insert photo to gallery so it's visible in system gallery
+                        try {
+                            photoOutput.insertToGallery(outputFile)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to insert photo to gallery", e)
+                        }
                         _photoUri.value = uri
                         launch(Dispatchers.Main) {
                             _error.value = null

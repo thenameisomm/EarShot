@@ -382,8 +382,7 @@ class CameraFragment : BaseFragment() {
 
         // Gallery thumbnail click
         binding.cardGallery.setOnClickListener {
-            // Could open gallery app - for now just show a toast
-            Toast.makeText(requireContext(), "Open gallery", Toast.LENGTH_SHORT).show()
+            openGallery()
         }
 
         // Drag handle to close settings
@@ -476,6 +475,84 @@ class CameraFragment : BaseFragment() {
         } catch (e: Exception) {
             // Keep placeholder if image fails to load
             binding.ivGalleryPlaceholder.visibility = View.VISIBLE
+        }
+    }
+
+    /**
+     * Open the gallery to view captured photos/videos.
+     * First tries to open the last captured media, then falls back to opening
+     * the EarShot folder in the system gallery.
+     */
+    private fun openGallery() {
+        try {
+            // First try to get and open the last captured photo
+            val lastPhoto = photoOutput.getLastCapturedPhoto()
+            val lastVideo = photoOutput.getLastCapturedVideo()
+
+            // Use the most recent media
+            val mediaUri = when {
+                lastPhoto != null && lastVideo != null -> {
+                    // Compare timestamps to find the most recent
+                    // For simplicity, prefer photo over video
+                    lastPhoto
+                }
+                lastPhoto != null -> lastPhoto
+                lastVideo != null -> lastVideo
+                else -> null
+            }
+
+            if (mediaUri != null) {
+                // Open the specific media item
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                    setDataAndType(mediaUri, getMimeType(mediaUri))
+                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(intent)
+            } else {
+                // No media found - try to open the DCIM/EarShot folder
+                openEarShotFolder()
+            }
+        } catch (e: Exception) {
+            // Fallback: open the EarShot folder
+            try {
+                openEarShotFolder()
+            } catch (e2: Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    "No photos or videos found",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    /**
+     * Open the EarShot folder in the system file manager/gallery.
+     */
+    private fun openEarShotFolder() {
+        // Try to use the system gallery
+        try {
+            val galleryIntent = android.content.Intent(android.content.Intent.ACTION_MAIN).apply {
+                addCategory(android.content.Intent.CATEGORY_APP_GALLERY)
+            }
+            startActivity(galleryIntent)
+        } catch (e: Exception) {
+            Toast.makeText(
+                requireContext(),
+                "Please open Gallery app manually",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    /**
+     * Get the MIME type for a given URI.
+     */
+    private fun getMimeType(uri: Uri): String {
+        return when {
+            uri.toString().contains("images") -> "image/*"
+            uri.toString().contains("video") -> "video/*"
+            else -> "*/*"
         }
     }
 

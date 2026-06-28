@@ -2,15 +2,21 @@ package com.earshot.ui.device
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.earshot.R
+import com.earshot.bluetooth.BluetoothDevice
 import com.earshot.databinding.ItemDeviceBinding
-import com.earshot.model.BluetoothDevice
 
 /**
  * RecyclerView Adapter for displaying Bluetooth devices.
+ *
+ * This adapter shows:
+ * - Device name and MAC address
+ * - Connection/paired status
+ * - Action button (Pair/Connect/Disconnect)
  */
 class DeviceAdapter(
     private val onDeviceClick: (BluetoothDevice) -> Unit,
@@ -36,20 +42,32 @@ class DeviceAdapter(
 
         fun bind(device: BluetoothDevice) {
             binding.apply {
-                tvDeviceName.text = device.name
+                // Device name
+                tvDeviceName.text = device.getDisplayName()
+
+                // MAC address
                 tvDeviceAddress.text = device.address
 
-                // Set status text and color
-                tvStatus.text = if (device.isConnected) {
-                    root.context.getString(R.string.device_connected)
-                } else {
-                    root.context.getString(R.string.device_disconnected)
+                // Status based on connection state
+                when {
+                    device.isConnected -> {
+                        tvStatus.text = root.context.getString(R.string.device_connected)
+                        tvStatus.isVisible = true
+                    }
+                    device.isPaired -> {
+                        // Paired but not connected
+                        tvStatus.isVisible = false
+                    }
+                    else -> {
+                        // Available but not paired
+                        tvStatus.isVisible = false
+                    }
                 }
 
-                // Set action button text
+                // Action button
                 btnAction.text = when {
                     device.isConnected -> root.context.getString(R.string.device_unpair)
-                    device.isPaired -> root.context.getString(R.string.device_connected)
+                    device.isPaired -> root.context.getString(R.string.device_connect)
                     else -> root.context.getString(R.string.device_pair)
                 }
 

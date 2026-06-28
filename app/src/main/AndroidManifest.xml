@@ -7,9 +7,19 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <!-- Location permission required for Bluetooth scanning (legacy) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- For BLE scanning on Android 13+ -->
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:usesPermissionFlags="neverForLocation"
+        android:minSdkVersion="33" />
 
-    <!-- Camera permission (not implemented yet - placeholder) -->
+    <!-- Camera permission -->
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Audio permission for video recording -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!-- Media permissions for media button handling -->
     <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL"

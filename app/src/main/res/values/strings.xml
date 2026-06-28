@@ -24,11 +24,27 @@
     <string name="device_subtitle">Manage your Bluetooth earbuds</string>
     <string name="device_scan">Scan for Devices</string>
     <string name="device_scanning">Scanning…</string>
+    <string name="device_refresh">Refresh</string>
     <string name="device_empty">No devices found</string>
+    <string name="device_empty_subtitle">Tap the button above to scan for nearby Bluetooth devices</string>
     <string name="device_connected">Connected</string>
     <string name="device_disconnected">Disconnected</string>
+    <string name="device_connecting">Connecting…</string>
+    <string name="device_connect_failed">Connection failed</string>
     <string name="device_pair">Pair</string>
-    <string name="device_unpair">Unpair</string>
+    <string name="device_unpair">Disconnect</string>
+    <string name="device_connect">Connect</string>
+    <string name="device_paired_devices">Paired Devices</string>
+    <string name="device_discovered_devices">Available Devices</string>
+    <string name="device_stop_scan">Stop Scan</string>
+    <string name="device_connected_to">Connected to %1$s</string>
+    <string name="device_not_paired">Not Paired</string>
+
+    <!-- Bluetooth Permissions -->
+    <string name="bluetooth_permission_denied">Bluetooth permission is required to scan for devices</string>
+    <string name="bluetooth_not_available">Bluetooth is not available on this device</string>
+    <string name="bluetooth_not_enabled">Bluetooth is disabled. Please enable it in settings.</string>
+    <string name="bluetooth_enable_manually">Please enable Bluetooth in your device settings to scan for devices</string>
 
     <!-- Gesture Mapping Screen -->
     <string name="gesture_title">Gesture Mapping</string>

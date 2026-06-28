@@ -7,23 +7,27 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.earshot.R
+import com.earshot.bluetooth.BluetoothRepository
+import com.earshot.bluetooth.BluetoothState
 import com.earshot.databinding.FragmentHomeBinding
-import com.earshot.repository.DeviceRepository
 import com.earshot.ui.base.BaseFragment
-import com.earshot.viewmodel.HomeViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  * Home Screen Fragment.
+ *
  * Displays the app overview, Bluetooth connection status, and quick action buttons.
+ * Shows whether a Bluetooth device is connected.
  */
 class HomeFragment : BaseFragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: HomeViewModel by viewModels {
-        HomeViewModel.Factory(DeviceRepository())
-    }
+    private val repository by lazy { BluetoothRepository(requireContext()) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,17 +46,24 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun setupObservers() {
-        viewModel.isConnected.observe(viewLifecycleOwner) { isConnected ->
-            binding.tvStatus.text = if (isConnected) {
-                getString(R.string.home_status_connected)
-            } else {
-                getString(R.string.home_status_disconnected)
+        // Observe Bluetooth state
+        CoroutineScope(Dispatchers.Main).launch {
+            repository.bluetoothState.collectLatest { state ->
+                updateConnectionStatus(state)
             }
         }
+    }
 
-        viewModel.connectedDeviceName.observe(viewLifecycleOwner) { deviceName ->
-            if (deviceName != null) {
-                binding.tvStatus.text = "${getString(R.string.home_status_connected)}: $deviceName"
+    private fun updateConnectionStatus(state: BluetoothState) {
+        binding.tvStatus.text = when (state) {
+            is BluetoothState.Connected -> {
+                getString(R.string.home_status_connected) + ": " + state.device.name
+            }
+            is BluetoothState.Connecting -> {
+                getString(R.string.home_status_connected) + "..."
+            }
+            else -> {
+                getString(R.string.home_status_disconnected)
             }
         }
     }
@@ -76,7 +87,11 @@ class HomeFragment : BaseFragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.refreshConnectionStatus()
+        // Refresh connection status
+        if (repository.isReady()) {
+            val state = repository.bluetoothState.value
+            updateConnectionStatus(state)
+        }
     }
 
     override fun onDestroyView() {
